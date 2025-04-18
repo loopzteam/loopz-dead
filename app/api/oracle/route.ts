@@ -67,7 +67,7 @@ Your responses should be conversational and not mention loops explicitly unless 
                 description: "Suggested tasks to help address what's on the user's mind"
               }
             },
-            required: ["reflection", "coaching"]
+            required: []
           }
         }
       ],
@@ -83,16 +83,14 @@ Your responses should be conversational and not mention loops explicitly unless 
 
     // Fallback if function call format isn't available
     return NextResponse.json({
-      reflection: response.choices[0]?.message?.content || "I understand your thoughts. Would you like to explore this further?",
-      coaching: "Take a moment to reflect on what matters most to you right now."
+      reflection: response.choices[0]?.message?.content || "I understand your thoughts. Would you like to explore this further?"
     });
 
   } catch (error) {
     console.error('Oracle API error:', error);
     return NextResponse.json(
       {
-        reflection: "I'm having trouble processing that right now.",
-        coaching: "Let's try a different approach."
+        reflection: "I'm having trouble processing that right now."
       },
       { status: 500 }
     );

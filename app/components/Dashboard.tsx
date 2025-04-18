@@ -88,15 +88,17 @@ export default function Dashboard() {
       // Use OpenAI integration with chat history
       const aiResponse = await processInput(userInput, recentMessages);
       
-      // Create AI message from response
-      const aiMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        content: aiResponse.reflection,
-        isAI: true,
-        timestamp: new Date()
-      };
-      
-      setMessages(prev => [...prev, aiMessage]);
+      // Add reflection message if it exists
+      if (aiResponse.reflection) {
+        const aiMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          content: aiResponse.reflection,
+          isAI: true,
+          timestamp: new Date()
+        };
+        
+        setMessages(prev => [...prev, aiMessage]);
+      }
       
       // If AI suggests coaching advice, add it as a separate message
       if (aiResponse.coaching) {
@@ -339,23 +341,53 @@ export default function Dashboard() {
                 className="bg-gray-50 overflow-y-auto"
                 style={{ maxHeight: '60vh' }}
               >
-                <div className="p-4 space-y-4">
-                  {messages.map(message => (
-                    <div 
-                      key={message.id} 
-                      className={`flex ${message.isAI ? 'justify-start' : 'justify-end'}`}
-                    >
+                <div className="p-4 space-y-2">
+                  {messages.map((message, index) => {
+                    // Check if this message is part of a sequence from the same sender
+                    const isFirstInSequence = index === 0 || messages[index - 1].isAI !== message.isAI;
+                    const isLastInSequence = index === messages.length - 1 || messages[index + 1].isAI !== message.isAI;
+                    
+                    // Determine border radius based on position in sequence
+                    let borderRadiusClass = '';
+                    if (message.isAI) {
+                      if (isFirstInSequence && isLastInSequence) {
+                        borderRadiusClass = 'rounded-2xl'; // Single message
+                      } else if (isFirstInSequence) {
+                        borderRadiusClass = 'rounded-t-2xl rounded-br-2xl rounded-bl-lg'; // First in sequence
+                      } else if (isLastInSequence) {
+                        borderRadiusClass = 'rounded-b-2xl rounded-tr-2xl rounded-tl-lg'; // Last in sequence
+                      } else {
+                        borderRadiusClass = 'rounded-r-2xl rounded-l-lg'; // Middle of sequence
+                      }
+                    } else {
+                      if (isFirstInSequence && isLastInSequence) {
+                        borderRadiusClass = 'rounded-2xl'; // Single message
+                      } else if (isFirstInSequence) {
+                        borderRadiusClass = 'rounded-t-2xl rounded-bl-2xl rounded-br-lg'; // First in sequence
+                      } else if (isLastInSequence) {
+                        borderRadiusClass = 'rounded-b-2xl rounded-tl-2xl rounded-tr-lg'; // Last in sequence
+                      } else {
+                        borderRadiusClass = 'rounded-l-2xl rounded-r-lg'; // Middle of sequence
+                      }
+                    }
+                    
+                    return (
                       <div 
-                        className={`px-4 py-2 rounded-full max-w-[85%] ${
-                          message.isAI 
-                            ? 'bg-white shadow-sm text-gray-800' 
-                            : 'bg-black text-white'
-                        }`}
+                        key={message.id} 
+                        className={`flex ${message.isAI ? 'justify-start' : 'justify-end'}`}
                       >
-                        {message.content}
+                        <div 
+                          className={`px-4 py-2 max-w-[85%] ${borderRadiusClass} ${
+                            message.isAI 
+                              ? 'bg-gray-200 text-gray-800' 
+                              : 'bg-blue-500 text-white'
+                          }`}
+                        >
+                          {message.content}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                   <div ref={messagesEndRef} />
                 </div>
               </motion.div>
@@ -378,7 +410,7 @@ export default function Dashboard() {
               <button
                 type="submit"
                 disabled={!inputValue.trim() || isProcessing}
-                className="w-10 h-10 flex items-center justify-center bg-black text-white rounded-full disabled:bg-gray-300 focus:outline-none"
+                className="w-10 h-10 flex items-center justify-center bg-blue-500 text-white rounded-full disabled:bg-gray-300 focus:outline-none"
               >
                 {isProcessing ? (
                   <div className="w-5 h-5 border-2 border-t-transparent border-white rounded-full animate-spin"></div>
