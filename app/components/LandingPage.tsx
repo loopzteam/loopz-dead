@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useAnimation } from 'framer-motion';
 import AuthForm from './AuthForm';
 import { useSupabase } from './SupabaseProvider';
 import { useDashboard } from './DashboardContext';
@@ -14,6 +14,9 @@ const LandingPage = () => {
   const [currentQuoteIndex, setCurrentQuoteIndex] = useState(0);
   const [isQuoteChanging, setIsQuoteChanging] = useState(false);
   
+  // Animation controls for the logo
+  const logoControls = useAnimation();
+  
   // Zen-inspired quotes
   const quotes = [
     "You're not behind. You're just early to your own clarity.",
@@ -23,6 +26,26 @@ const LandingPage = () => {
     "Breathe in possibility. Breathe out limitation.",
     "Each moment is a new beginning."
   ];
+  
+  // Add event listener for password error
+  useEffect(() => {
+    const handlePasswordError = () => {
+      console.log("Password error detected - shaking logo");
+      // Shake the logo with a "no" motion
+      logoControls.start({
+        rotate: [0, -10, 0, 10, 0, -10, 0],
+        transition: { duration: 0.5, ease: "easeInOut" }
+      });
+    };
+    
+    // Add event listener
+    window.addEventListener('passwordError', handlePasswordError);
+    
+    // Cleanup
+    return () => {
+      window.removeEventListener('passwordError', handlePasswordError);
+    };
+  }, [logoControls]);
   
   // Smoothly cycle through quotes
   useEffect(() => {
@@ -72,7 +95,12 @@ const LandingPage = () => {
     hover: {
       scale: 1.05,
       rotate: [0, -1, 1, -1, 0],
-      transition: { duration: 0.8, ease: "easeInOut" }
+      filter: "drop-shadow(0px 5px 15px rgba(0, 0, 0, 0.15))",
+      transition: { 
+        scale: { duration: 0.8, ease: "easeInOut" },
+        rotate: { duration: 1.2, ease: "easeInOut", repeat: Infinity, repeatType: "loop" },
+        filter: { duration: 0.4 }
+      }
     }
   };
   
@@ -119,6 +147,7 @@ const LandingPage = () => {
           className="relative w-64 h-64 mb-8"
           variants={logoVariants}
           whileHover="hover"
+          animate={logoControls}
         >
           <Image 
             src="/images/loopz-logo.png" 

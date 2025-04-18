@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { useState, useRef, useEffect } from 'react';
+import { motion, useAnimation } from 'framer-motion';
 import { supabase } from '../lib/supabase';
 import { useRouter } from 'next/navigation';
 import { useSupabase } from './SupabaseProvider';
@@ -17,6 +17,27 @@ const AuthForm = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  
+  // Animation controls
+  const formControls = useAnimation();
+  const logoControls = useAnimation();
+  
+  // Watch for errors and trigger shake animation
+  useEffect(() => {
+    if (error) {
+      // Shake animation sequence
+      formControls.start({
+        x: [-10, 10, -10, 10, -5, 5, -2, 2, 0],
+        transition: { duration: 0.5, ease: "easeInOut" }
+      });
+      
+      // Also signal to the logo to shake (this will be implemented on the landing page)
+      if (typeof window !== 'undefined') {
+        const event = new CustomEvent('passwordError');
+        window.dispatchEvent(event);
+      }
+    }
+  }, [error, formControls]);
   
   // Switch between sign in and sign up forms
   const toggleMode = () => {
@@ -157,6 +178,8 @@ const AuthForm = () => {
         variants={formVariants}
         initial="hidden"
         animate="visible"
+        custom={error}
+        animate={formControls}
       >
         <motion.div variants={itemVariants}>
           <input
