@@ -10,7 +10,7 @@ import { useDashboard } from './DashboardContext';
 const LandingPage = () => {
   const { session } = useSupabase();
   const { isDashboardVisible, setDashboardVisible } = useDashboard();
-  const [showAuth, setShowAuth] = useState(false);
+  const [showAuth, setShowAuth] = useState(true);
   const [currentQuoteIndex, setCurrentQuoteIndex] = useState(0);
   const [isQuoteChanging, setIsQuoteChanging] = useState(false);
   
@@ -183,21 +183,21 @@ const LandingPage = () => {
           onClick={handleCTAClick}
           className="px-4 py-2 text-sm font-medium text-white bg-black rounded-full hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-400"
         >
-          Untangle Your Mind
+          {session ? "Go to Dashboard" : (showAuth ? "Hide Form" : "Sign In / Sign Up")}
         </motion.button>
   
         {!session && (
           <AnimatePresence>
             {showAuth && (
               <motion.div
-                initial={{ opacity: 0, y: 30, height: 0 }}
+                initial={{ opacity: 0.9, y: 10 }}
                 animate={{ 
                   opacity: 1, 
                   y: 0, 
                   height: 'auto',
                   transition: { 
-                    duration: 0.6, 
-                    ease: [0.16, 1, 0.3, 1]
+                    duration: 0.4, 
+                    ease: "easeOut"
                   }
                 }}
                 exit={{ 
@@ -205,8 +205,8 @@ const LandingPage = () => {
                   y: 30, 
                   height: 0,
                   transition: { 
-                    duration: 0.4, 
-                    ease: [0.16, 1, 0.3, 1]
+                    duration: 0.3, 
+                    ease: "easeInOut"
                   }
                 }}
                 className="w-full max-w-sm mt-6"
