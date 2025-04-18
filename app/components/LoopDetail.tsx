@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { useSupabase } from './SupabaseProvider';
 
 interface Task {
@@ -117,9 +116,9 @@ export default function LoopDetail({ loopId, onClose }: LoopDetailProps) {
   
   if (loading) {
     return (
-      <div className="fixed inset-0 flex items-center justify-center bg-white z-50">
+      <div className="flex flex-col items-center justify-center h-full">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-t-black border-gray-200 rounded-full animate-spin mx-auto mb-4"></div>
+          <div className="w-10 h-10 border-2 border-t-black border-gray-200 rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-600">Loading loop...</p>
         </div>
       </div>
@@ -128,7 +127,7 @@ export default function LoopDetail({ loopId, onClose }: LoopDetailProps) {
   
   if (!loop) {
     return (
-      <div className="fixed inset-0 flex items-center justify-center bg-white z-50">
+      <div className="flex flex-col items-center justify-center h-full">
         <div className="text-center p-6">
           <p className="text-red-500 mb-4">Error: Could not find loop</p>
           <button 
@@ -143,12 +142,7 @@ export default function LoopDetail({ loopId, onClose }: LoopDetailProps) {
   }
   
   return (
-    <motion.div 
-      className="fixed inset-0 bg-white z-50 flex flex-col"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-    >
+    <div className="flex flex-col h-full">
       {/* Header */}
       <div className="p-4 border-b border-gray-200 flex items-center justify-between">
         <h1 className="text-xl font-semibold">{loop.title}</h1>
@@ -212,6 +206,6 @@ export default function LoopDetail({ loopId, onClose }: LoopDetailProps) {
           </div>
         </form>
       </div>
-    </motion.div>
+    </div>
   );
 } 
