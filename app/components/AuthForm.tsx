@@ -4,11 +4,13 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { supabase } from '../lib/supabase';
 import { useRouter } from 'next/navigation';
+import { useSupabase } from './SupabaseProvider';
 
 type AuthMode = 'signin' | 'signup';
 
 const AuthForm = () => {
   const router = useRouter();
+  const { session } = useSupabase();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [mode, setMode] = useState<AuthMode>('signin');
@@ -97,6 +99,11 @@ const AuthForm = () => {
     }
   };
   
+  // Don't render the auth form at all if signed in
+  if (session) {
+    return null;
+  }
+  
   // Animation variants
   const formVariants = {
     hidden: { opacity: 0 },
@@ -120,17 +127,8 @@ const AuthForm = () => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="p-6 bg-white rounded-lg shadow-md"
+      className="p-6 bg-white rounded-lg shadow-none"
     >
-      <motion.h2 
-        className="mb-6 text-xl font-medium text-center"
-        initial={{ y: -10, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.4 }}
-      >
-        {mode === 'signin' ? 'Sign in to your account' : 'Create a new account'}
-      </motion.h2>
-      
       {error && (
         <motion.div 
           className="mb-4 p-3 bg-red-50 text-red-600 text-sm rounded-md"
@@ -166,7 +164,7 @@ const AuthForm = () => {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Email"
-            className="w-full px-4 py-3 border border-gray-300 rounded-full focus:outline-none focus:ring-1 focus:ring-gray-400"
+            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-full focus:outline-none focus:ring-1 focus:ring-gray-400"
             required
             disabled={loading}
           />
@@ -178,7 +176,7 @@ const AuthForm = () => {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Password"
-            className="w-full px-4 py-3 border border-gray-300 rounded-full focus:outline-none focus:ring-1 focus:ring-gray-400"
+            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-full focus:outline-none focus:ring-1 focus:ring-gray-400"
             required
             disabled={loading}
           />
@@ -186,7 +184,7 @@ const AuthForm = () => {
         
         <motion.button
           type="submit"
-          className={`w-full px-6 py-3 font-medium text-white bg-black rounded-full focus:outline-none focus:ring-2 focus:ring-gray-400 ${
+          className={`w-full px-4 py-2 text-sm font-medium text-white bg-black rounded-full focus:outline-none focus:ring-2 focus:ring-gray-400 ${
             loading ? 'opacity-70 cursor-not-allowed' : 'hover:bg-gray-800'
           }`}
           disabled={loading}
@@ -240,7 +238,7 @@ const AuthForm = () => {
       
       <div className="space-y-3">
         <motion.button 
-          className="w-full px-6 py-3 text-sm font-medium border border-gray-300 rounded-full hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-gray-400"
+          className="w-full px-4 py-2 text-sm font-medium border border-gray-300 rounded-full hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-gray-400"
           whileHover={{ scale: 1.01, backgroundColor: 'rgba(0,0,0,0.02)' }}
           whileTap={{ scale: 0.99 }}
           onClick={() => handleSocialSignIn('apple')}
@@ -250,7 +248,7 @@ const AuthForm = () => {
         </motion.button>
         
         <motion.button 
-          className="w-full px-6 py-3 text-sm font-medium border border-gray-300 rounded-full hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-gray-400"
+          className="w-full px-4 py-2 text-sm font-medium border border-gray-300 rounded-full hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-gray-400"
           whileHover={{ scale: 1.01, backgroundColor: 'rgba(0,0,0,0.02)' }}
           whileTap={{ scale: 0.99 }}
           onClick={() => handleSocialSignIn('google')}

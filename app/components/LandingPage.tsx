@@ -4,8 +4,12 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import AuthForm from './AuthForm';
+import { useSupabase } from './SupabaseProvider';
+import { useDashboard } from './DashboardContext';
 
 const LandingPage = () => {
+  const { session } = useSupabase();
+  const { isDashboardVisible, setDashboardVisible } = useDashboard();
   const [showAuth, setShowAuth] = useState(false);
   const [currentQuoteIndex, setCurrentQuoteIndex] = useState(0);
   const [isQuoteChanging, setIsQuoteChanging] = useState(false);
@@ -86,6 +90,16 @@ const LandingPage = () => {
     }
   };
   
+  const handleCTAClick = () => {
+    if (session) {
+      if (!isDashboardVisible) {
+        setDashboardVisible(true);
+      }
+    } else {
+      setShowAuth(!showAuth);
+    }
+  };
+  
   return (
     <div className="flex flex-col items-center justify-center min-h-screen px-4 py-12 bg-white overflow-hidden">
       <motion.div 
@@ -137,41 +151,43 @@ const LandingPage = () => {
             boxShadow: "0px 4px 15px rgba(0, 0, 0, 0.1)"
           }}
           whileTap={{ scale: 0.98 }}
-          onClick={() => setShowAuth(!showAuth)}
-          className="px-8 py-3 font-medium text-white bg-black rounded-full hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-400"
+          onClick={handleCTAClick}
+          className="px-4 py-2 text-sm font-medium text-white bg-black rounded-full hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-400"
         >
           Untangle Your Mind
         </motion.button>
-      </motion.div>
-      
-      <AnimatePresence>
-        {showAuth && (
-          <motion.div
-            initial={{ opacity: 0, y: 30, height: 0 }}
-            animate={{ 
-              opacity: 1, 
-              y: 0, 
-              height: 'auto',
-              transition: { 
-                duration: 0.6, 
-                ease: [0.16, 1, 0.3, 1]
-              }
-            }}
-            exit={{ 
-              opacity: 0, 
-              y: 30, 
-              height: 0,
-              transition: { 
-                duration: 0.4, 
-                ease: [0.16, 1, 0.3, 1]
-              }
-            }}
-            className="w-full max-w-md mt-12"
-          >
-            <AuthForm />
-          </motion.div>
+  
+        {!session && (
+          <AnimatePresence>
+            {showAuth && (
+              <motion.div
+                initial={{ opacity: 0, y: 30, height: 0 }}
+                animate={{ 
+                  opacity: 1, 
+                  y: 0, 
+                  height: 'auto',
+                  transition: { 
+                    duration: 0.6, 
+                    ease: [0.16, 1, 0.3, 1]
+                  }
+                }}
+                exit={{ 
+                  opacity: 0, 
+                  y: 30, 
+                  height: 0,
+                  transition: { 
+                    duration: 0.4, 
+                    ease: [0.16, 1, 0.3, 1]
+                  }
+                }}
+                className="w-full max-w-sm mt-6"
+              >
+                <AuthForm />
+              </motion.div>
+            )}
+          </AnimatePresence>
         )}
-      </AnimatePresence>
+      </motion.div>
     </div>
   );
 };
