@@ -87,8 +87,10 @@ export default function Dashboard() {
          userInput.toLowerCase().includes('sure') ||
          userInput.toLowerCase().includes('ok') ||
          userInput.toLowerCase().includes('create') ||
-         userInput.toLowerCase().includes('loop'))) {
+         userInput.toLowerCase().includes('loop') ||
+         userInput.toLowerCase().includes('yea'))) {
       
+      console.log('Detected loop creation confirmation:', userInput);
       await handleCreateLoop();
       setIsProcessing(false);
       return;
@@ -100,6 +102,8 @@ export default function Dashboard() {
          userInput.toLowerCase().includes('don\'t') ||
          userInput.toLowerCase().includes('not now') ||
          userInput.toLowerCase().includes('cancel'))) {
+      
+      console.log('Detected loop creation rejection:', userInput);
       
       // Clear the loop suggestion
       setLoopSuggestion(null);
@@ -235,6 +239,7 @@ export default function Dashboard() {
     
     try {
       setIsCreatingLoop(true);
+      console.log('Starting loop creation:', loopSuggestion);
       
       // Add a message indicating loop creation is in progress
       const processingMessage: Message = {
@@ -247,6 +252,7 @@ export default function Dashboard() {
       setMessages(prev => [...prev, processingMessage]);
       
       // Insert new loop into Supabase
+      console.log('Inserting loop into Supabase');
       const { data, error } = await supabase
         .from('loops')
         .insert([
@@ -259,14 +265,19 @@ export default function Dashboard() {
         ])
         .select();
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error inserting loop:', error);
+        throw error;
+      }
       
+      console.log('Loop created successfully:', data);
       let newLoopId = null;
       
       // If there are suggested tasks, add them
       if (loopSuggestion.tasks && loopSuggestion.tasks.length > 0 && data && data[0]) {
         const loopId = data[0].id;
         newLoopId = loopId;
+        console.log('Creating tasks for loop:', loopId);
         
         const tasks = loopSuggestion.tasks.map((task, index) => ({
           loop_id: loopId,
@@ -280,9 +291,14 @@ export default function Dashboard() {
           .from('tasks')
           .insert(tasks);
         
-        if (tasksError) console.error('Error creating tasks:', tasksError);
+        if (tasksError) {
+          console.error('Error creating tasks:', tasksError);
+        } else {
+          console.log('Tasks created successfully');
+        }
       } else if (data && data[0]) {
         newLoopId = data[0].id;
+        console.log('No tasks to create, just using loop ID:', newLoopId);
       }
       
       // Clear suggestion
@@ -299,10 +315,15 @@ export default function Dashboard() {
       setMessages(prev => [...prev, confirmationMessage]);
       
       // Wait a moment and then navigate to the new loop
+      console.log('Setting timeout to navigate to loop:', newLoopId);
       setTimeout(() => {
         if (newLoopId) {
+          console.log('Navigating to loop:', newLoopId);
           setSelectedLoopId(newLoopId);
+          console.log('Collapsing chat');
           setIsChatExpanded(false); // Optionally collapse chat when showing loop detail
+        } else {
+          console.error('No loop ID available for navigation');
         }
       }, 1000);
       

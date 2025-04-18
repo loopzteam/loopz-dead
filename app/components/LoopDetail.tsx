@@ -33,6 +33,7 @@ export default function LoopDetail({ loopId, onClose }: LoopDetailProps) {
   useEffect(() => {
     const fetchLoopData = async () => {
       setLoading(true);
+      console.log('LoopDetail: Fetching data for loop ID:', loopId);
       
       try {
         // Fetch loop details
@@ -42,7 +43,12 @@ export default function LoopDetail({ loopId, onClose }: LoopDetailProps) {
           .eq('id', loopId)
           .single();
         
-        if (loopError) throw loopError;
+        if (loopError) {
+          console.error('LoopDetail: Error fetching loop:', loopError);
+          throw loopError;
+        }
+        
+        console.log('LoopDetail: Loop data fetched:', loopData);
         
         // Fetch loop tasks
         const { data: taskData, error: taskError } = await supabase
@@ -51,7 +57,12 @@ export default function LoopDetail({ loopId, onClose }: LoopDetailProps) {
           .eq('loop_id', loopId)
           .order('order', { ascending: true });
         
-        if (taskError) throw taskError;
+        if (taskError) {
+          console.error('LoopDetail: Error fetching tasks:', taskError);
+          throw taskError;
+        }
+        
+        console.log('LoopDetail: Tasks fetched:', taskData);
         
         setLoop(loopData);
         setTasks(taskData || []);
