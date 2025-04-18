@@ -293,7 +293,7 @@ export default function Dashboard() {
           <h1 className="text-xl font-semibold">Your Loopz</h1>
           <button
             onClick={handleSignOut}
-            className="px-3 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600"
+            className="px-3 py-1 text-sm bg-gray-700 text-white rounded hover:bg-gray-800"
             aria-label="Sign out"
           >
             Sign Out
@@ -341,6 +341,17 @@ export default function Dashboard() {
                 className="bg-gray-50 overflow-y-auto"
                 style={{ maxHeight: '60vh' }}
               >
+                <div className="flex items-center justify-between p-2 border-b border-gray-200 bg-white">
+                  <div className="text-sm text-gray-500">Conversation</div>
+                  <button 
+                    onClick={() => setIsChatExpanded(false)}
+                    className="p-1 text-gray-500 hover:text-gray-700 focus:outline-none"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clipRule="evenodd" />
+                    </svg>
+                  </button>
+                </div>
                 <div className="p-4 space-y-2">
                   {messages.map((message, index) => {
                     // Check if this message is part of a sequence from the same sender
@@ -380,8 +391,8 @@ export default function Dashboard() {
                           className={`px-4 py-2 max-w-[85%] ${borderRadiusClass} ${
                             message.isAI 
                               ? 'bg-gray-200 text-gray-800' 
-                              : 'bg-blue-500 text-white'
-                          }`}
+                              : 'bg-gray-800 text-white'
+                          } text-sm`}
                         >
                           {message.content}
                         </div>
@@ -410,7 +421,7 @@ export default function Dashboard() {
               <button
                 type="submit"
                 disabled={!inputValue.trim() || isProcessing}
-                className="w-10 h-10 flex items-center justify-center bg-blue-500 text-white rounded-full disabled:bg-gray-300 focus:outline-none"
+                className="w-10 h-10 flex items-center justify-center bg-gray-800 text-white rounded-full disabled:bg-gray-300 focus:outline-none"
               >
                 {isProcessing ? (
                   <div className="w-5 h-5 border-2 border-t-transparent border-white rounded-full animate-spin"></div>
