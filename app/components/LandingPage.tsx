@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { motion, AnimatePresence, useAnimation } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import AuthForm from './AuthForm';
 import { useSupabase } from './SupabaseProvider';
 import { useDashboard } from './DashboardContext';
@@ -10,12 +10,9 @@ import { useDashboard } from './DashboardContext';
 const LandingPage = () => {
   const { session } = useSupabase();
   const { isDashboardVisible, setDashboardVisible } = useDashboard();
-  const [showAuth, setShowAuth] = useState(true);
+  const [showAuth, setShowAuth] = useState(false);
   const [currentQuoteIndex, setCurrentQuoteIndex] = useState(0);
   const [isQuoteChanging, setIsQuoteChanging] = useState(false);
-  
-  // Animation controls for the logo
-  const logoControls = useAnimation();
   
   // Zen-inspired quotes
   const quotes = [
@@ -26,26 +23,6 @@ const LandingPage = () => {
     "Breathe in possibility. Breathe out limitation.",
     "Each moment is a new beginning."
   ];
-  
-  // Add event listener for password error
-  useEffect(() => {
-    const handlePasswordError = () => {
-      console.log("Password error detected - shaking logo");
-      // Shake the logo with a "no" motion
-      logoControls.start({
-        rotate: [0, -10, 0, 10, 0, -10, 0],
-        transition: { duration: 0.5, ease: "easeInOut" }
-      });
-    };
-    
-    // Add event listener
-    window.addEventListener('passwordError', handlePasswordError);
-    
-    // Cleanup
-    return () => {
-      window.removeEventListener('passwordError', handlePasswordError);
-    };
-  }, [logoControls]);
   
   // Smoothly cycle through quotes
   useEffect(() => {
@@ -95,12 +72,7 @@ const LandingPage = () => {
     hover: {
       scale: 1.05,
       rotate: [0, -1, 1, -1, 0],
-      filter: "drop-shadow(0px 5px 15px rgba(0, 0, 0, 0.15))",
-      transition: { 
-        scale: { duration: 0.8, ease: "easeInOut" },
-        rotate: { duration: 1.2, ease: "easeInOut", repeat: Infinity, repeatType: "loop" },
-        filter: { duration: 0.4 }
-      }
+      transition: { duration: 0.8, ease: "easeInOut" }
     }
   };
   
@@ -147,7 +119,6 @@ const LandingPage = () => {
           className="relative w-64 h-64 mb-8"
           variants={logoVariants}
           whileHover="hover"
-          animate={logoControls}
         >
           <Image 
             src="/images/loopz-logo.png" 
@@ -183,21 +154,21 @@ const LandingPage = () => {
           onClick={handleCTAClick}
           className="px-4 py-2 text-sm font-medium text-white bg-black rounded-full hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-400"
         >
-          {session ? "Go to Dashboard" : (showAuth ? "Hide Form" : "Sign In / Sign Up")}
+          Untangle Your Mind
         </motion.button>
   
         {!session && (
           <AnimatePresence>
             {showAuth && (
               <motion.div
-                initial={{ opacity: 0.9, y: 10 }}
+                initial={{ opacity: 0, y: 30, height: 0 }}
                 animate={{ 
                   opacity: 1, 
                   y: 0, 
                   height: 'auto',
                   transition: { 
-                    duration: 0.4, 
-                    ease: "easeOut"
+                    duration: 0.6, 
+                    ease: [0.16, 1, 0.3, 1]
                   }
                 }}
                 exit={{ 
@@ -205,8 +176,8 @@ const LandingPage = () => {
                   y: 30, 
                   height: 0,
                   transition: { 
-                    duration: 0.3, 
-                    ease: "easeInOut"
+                    duration: 0.4, 
+                    ease: [0.16, 1, 0.3, 1]
                   }
                 }}
                 className="w-full max-w-sm mt-6"
