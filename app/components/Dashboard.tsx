@@ -45,6 +45,7 @@ export default function Dashboard() {
   // Loop suggestion state
   const [loopSuggestion, setLoopSuggestion] = useState<LoopSuggestion | null>(null);
   const [showSuggestion, setShowSuggestion] = useState(false);
+  const [isCreatingLoop, setIsCreatingLoop] = useState(false);
   
   // User's loops state
   const [loops, setLoops] = useState<Loop[]>([]);
@@ -190,6 +191,8 @@ export default function Dashboard() {
     if (!loopSuggestion || !session) return;
     
     try {
+      setIsCreatingLoop(true);
+      
       // Insert new loop into Supabase
       const { data, error } = await supabase
         .from('loops')
@@ -253,7 +256,15 @@ export default function Dashboard() {
       };
       
       setMessages(prev => [...prev, errorMessage]);
+    } finally {
+      setIsCreatingLoop(false);
     }
+  };
+  
+  // Dismiss loop suggestion
+  const handleDismissSuggestion = () => {
+    setShowSuggestion(false);
+    setLoopSuggestion(null);
   };
 
   // Sign out handler
@@ -348,7 +359,7 @@ export default function Dashboard() {
                     className="p-1 text-gray-500 hover:text-gray-700 focus:outline-none"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clipRule="evenodd" />
+                      <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
                     </svg>
                   </button>
                 </div>
@@ -435,6 +446,72 @@ export default function Dashboard() {
           </div>
         </div>
       </motion.div>
+      
+      {/* Loop Suggestion UI */}
+      <AnimatePresence>
+        {showSuggestion && loopSuggestion && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className="fixed bottom-24 left-1/2 transform -translate-x-1/2 bg-white shadow-lg rounded-lg p-4 w-[80%] max-w-md z-30"
+          >
+            <div className="flex justify-between items-start mb-3">
+              <h3 className="font-medium">Create a New Loop?</h3>
+              <button 
+                onClick={handleDismissSuggestion}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+              </button>
+            </div>
+            
+            <div className="mb-3">
+              <div className="font-medium text-sm mb-1">Title</div>
+              <div className="bg-gray-50 p-2 rounded-md text-sm">{loopSuggestion.title}</div>
+            </div>
+            
+            {loopSuggestion.tasks && loopSuggestion.tasks.length > 0 && (
+              <div className="mb-4">
+                <div className="font-medium text-sm mb-1">Tasks</div>
+                <ul className="bg-gray-50 p-2 rounded-md text-sm space-y-1">
+                  {loopSuggestion.tasks.map((task, index) => (
+                    <li key={index} className="flex items-start">
+                      <span className="text-gray-500 mr-2">•</span>
+                      <span>{task}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            
+            <div className="flex justify-end space-x-2">
+              <button
+                onClick={handleDismissSuggestion}
+                className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50"
+              >
+                Dismiss
+              </button>
+              <button
+                onClick={handleCreateLoop}
+                disabled={isCreatingLoop}
+                className="px-3 py-1 text-sm bg-gray-800 text-white rounded hover:bg-gray-700 disabled:bg-gray-400"
+              >
+                {isCreatingLoop ? (
+                  <span className="flex items-center">
+                    <div className="w-3 h-3 mr-2 border-2 border-t-transparent border-white rounded-full animate-spin"></div>
+                    Creating...
+                  </span>
+                ) : (
+                  "Create Loop"
+                )}
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
       
       {/* Overlay to close dashboard - 15% on the right side */}
       <div 
