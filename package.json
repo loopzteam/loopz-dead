@@ -3,7 +3,13 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "setup": "node scripts/setup.js",
+    "db:test": "node scripts/test-supabase.js",
+    "db:setup": "node lib/setup-db.js",
+    "db:init": "npm run db:setup-function && npm run db:setup-schema",
+    "db:setup-function": "node -e \"require('dotenv').config(); const { createClient } = require('@supabase/supabase-js'); const fs = require('fs'); const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY); const sql = fs.readFileSync('lib/setup-supabase.sql', 'utf8'); supabase.from('_root').select('*').limit(1).then(() => { console.log('Executing setup-supabase.sql...'); supabase.rpc('pg_query', { query: sql }).catch(e => console.log('Creating initial pg_query function...'));}).catch(e => console.error('Error:', e))\"",
+    "db:setup-schema": "node lib/init-db.js"
   },
   "dependencies": {
     "@radix-ui/react-checkbox": "^1.1.1",
@@ -17,10 +23,12 @@
     "autoprefixer": "10.4.20",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
-    "framer-motion": "^12.7.4",
+    "dotenv": "^16.3.1",
+    "framer-motion": "^10.18.0",
     "lucide-react": "^0.468.0",
     "next": "latest",
     "next-themes": "^0.4.3",
+    "node-fetch": "^3.3.2",
     "openai": "^4.95.0",
     "prettier": "^3.3.3",
     "react": "19.0.0",
