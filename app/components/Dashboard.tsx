@@ -157,17 +157,11 @@ export default function Dashboard() {
           tasks: aiResponse.tasks
         });
         
-        // Format tasks for display
-        let tasksList = '';
-        if (aiResponse.tasks && aiResponse.tasks.length > 0) {
-          tasksList = '\n\nTasks:\n' + aiResponse.tasks.map(task => `• ${task}`).join('\n');
-        }
-        
-        // Send a follow-up message asking to create the loop
+        // Send a follow-up message asking to create the loop (without showing tasks)
         setTimeout(() => {
           const loopSuggestionMessage: Message = {
             id: (Date.now() + 3).toString(),
-            content: `Would you like me to create a loop called "${aiResponse.suggestedTitle}" to track this?${tasksList}`,
+            content: `Would you like me to create a loop called "${aiResponse.suggestedTitle}" to track this?`,
             isAI: true,
             timestamp: new Date()
           };
@@ -267,9 +261,12 @@ export default function Dashboard() {
       
       if (error) throw error;
       
+      let newLoopId = null;
+      
       // If there are suggested tasks, add them
       if (loopSuggestion.tasks && loopSuggestion.tasks.length > 0 && data && data[0]) {
         const loopId = data[0].id;
+        newLoopId = loopId;
         
         const tasks = loopSuggestion.tasks.map((task, index) => ({
           loop_id: loopId,
@@ -284,6 +281,8 @@ export default function Dashboard() {
           .insert(tasks);
         
         if (tasksError) console.error('Error creating tasks:', tasksError);
+      } else if (data && data[0]) {
+        newLoopId = data[0].id;
       }
       
       // Clear suggestion
@@ -292,12 +291,20 @@ export default function Dashboard() {
       // Add confirmation message
       const confirmationMessage: Message = {
         id: Date.now().toString(),
-        content: `Perfect! I've created your "${loopSuggestion.title}" loop. You can access it from your loops list.`,
+        content: `Perfect! I've created your "${loopSuggestion.title}" loop. Opening it now...`,
         isAI: true,
         timestamp: new Date()
       };
       
       setMessages(prev => [...prev, confirmationMessage]);
+      
+      // Wait a moment and then navigate to the new loop
+      setTimeout(() => {
+        if (newLoopId) {
+          setSelectedLoopId(newLoopId);
+          setIsChatExpanded(false); // Optionally collapse chat when showing loop detail
+        }
+      }, 1000);
       
     } catch (error) {
       console.error('Error creating loop:', error);
