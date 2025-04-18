@@ -199,7 +199,7 @@ export default function Dashboard() {
       try {
         setLoadingLoops(true);
         const { data, error } = await supabase
-          .from('loops')
+          .from('loopz')
           .select('*')
           .order('created_at', { ascending: false });
         
@@ -217,11 +217,11 @@ export default function Dashboard() {
     
     // Subscribe to changes
     const loopsSubscription = supabase
-      .channel('loops-channel')
+      .channel('loopz-channel')
       .on('postgres_changes', { 
         event: '*', 
         schema: 'public', 
-        table: 'loops',
+        table: 'loopz',
         filter: `user_id=eq.${session?.user.id}`
       }, (payload) => {
         fetchLoops();
@@ -254,7 +254,7 @@ export default function Dashboard() {
       // Insert new loop into Supabase
       console.log('Inserting loop into Supabase');
       const { data, error } = await supabase
-        .from('loops')
+        .from('loopz')
         .insert([
           {
             title: loopSuggestion.title,
@@ -280,15 +280,15 @@ export default function Dashboard() {
         console.log('Creating tasks for loop:', loopId);
         
         const tasks = loopSuggestion.tasks.map((task, index) => ({
-          loop_id: loopId,
+          loopz_id: loopId,
           content: task,
           is_completed: false,
-          order: index,
+          order_num: index,
           created_at: new Date().toISOString()
         }));
         
         const { error: tasksError } = await supabase
-          .from('tasks')
+          .from('steps')
           .insert(tasks);
         
         if (tasksError) {

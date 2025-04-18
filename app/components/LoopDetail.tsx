@@ -7,7 +7,7 @@ interface Task {
   id: string;
   content: string;
   is_completed: boolean;
-  order: number;
+  order_num: number;
 }
 
 interface Loop {
@@ -38,7 +38,7 @@ export default function LoopDetail({ loopId, onClose }: LoopDetailProps) {
       try {
         // Fetch loop details
         const { data: loopData, error: loopError } = await supabase
-          .from('loops')
+          .from('loopz')
           .select('*')
           .eq('id', loopId)
           .single();
@@ -52,10 +52,10 @@ export default function LoopDetail({ loopId, onClose }: LoopDetailProps) {
         
         // Fetch loop tasks
         const { data: taskData, error: taskError } = await supabase
-          .from('tasks')
+          .from('steps')
           .select('*')
-          .eq('loop_id', loopId)
-          .order('order', { ascending: true });
+          .eq('loopz_id', loopId)
+          .order('order_num', { ascending: true });
         
         if (taskError) {
           console.error('LoopDetail: Error fetching tasks:', taskError);
@@ -86,13 +86,13 @@ export default function LoopDetail({ loopId, onClose }: LoopDetailProps) {
     const newTaskItem: Omit<Task, 'id'> = {
       content: newTask.trim(),
       is_completed: false,
-      order: tasks.length,
+      order_num: tasks.length,
     };
     
     try {
       const { data, error } = await supabase
-        .from('tasks')
-        .insert([{ ...newTaskItem, loop_id: loopId }])
+        .from('steps')
+        .insert([{ ...newTaskItem, loopz_id: loopId }])
         .select()
         .single();
       
@@ -109,7 +109,7 @@ export default function LoopDetail({ loopId, onClose }: LoopDetailProps) {
   const handleToggleTask = async (taskId: string, currentStatus: boolean) => {
     try {
       const { error } = await supabase
-        .from('tasks')
+        .from('steps')
         .update({ is_completed: !currentStatus })
         .eq('id', taskId);
       
