@@ -61,20 +61,6 @@ export default function Dashboard() {
     }
   }, [messages]);
   
-  // Set initial welcome message
-  useEffect(() => {
-    if (messages.length === 0) {
-      setMessages([
-        {
-          id: '1',
-          content: 'Hi there! What\'s on your mind today?',
-          isAI: true,
-          timestamp: new Date()
-        }
-      ]);
-    }
-  }, []);
-  
   // Handle chat message submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -360,7 +346,7 @@ export default function Dashboard() {
                       className={`flex ${message.isAI ? 'justify-start' : 'justify-end'}`}
                     >
                       <div 
-                        className={`px-4 py-2 rounded-lg max-w-[85%] ${
+                        className={`px-4 py-2 rounded-full max-w-[85%] ${
                           message.isAI 
                             ? 'bg-white shadow-sm text-gray-800' 
                             : 'bg-black text-white'
@@ -377,28 +363,30 @@ export default function Dashboard() {
           </AnimatePresence>
           
           {/* Chat Input */}
-          <div className="bg-white p-3 flex flex-col">
-            <div onClick={handleChatToggle} className="text-center text-gray-400 text-xs mb-2 cursor-pointer">
-              {isChatExpanded ? '▼ Collapse Chat' : '▲ Expand Chat'}
-            </div>
-            
-            <form onSubmit={handleSubmit} className="flex items-center">
+          <div className="bg-white p-3">
+            <form onSubmit={handleSubmit} className="flex items-center space-x-2">
               <input
                 ref={inputRef}
                 type="text"
                 value={inputValue}
                 onClick={() => !isChatExpanded && setIsChatExpanded(true)}
                 onChange={(e) => setInputValue(e.target.value)}
-                placeholder="Type a message..."
+                placeholder="What's on your mind?"
                 disabled={isProcessing}
-                className="flex-1 p-2 border border-gray-100 rounded-l-lg focus:outline-none focus:border-gray-400"
+                className="flex-1 px-4 py-2 text-sm border border-gray-100 rounded-full focus:outline-none focus:ring-1 focus:ring-gray-400 italic"
               />
               <button
                 type="submit"
                 disabled={!inputValue.trim() || isProcessing}
-                className="p-2 px-4 bg-black text-white rounded-r-lg disabled:bg-gray-300"
+                className="w-10 h-10 flex items-center justify-center bg-black text-white rounded-full disabled:bg-gray-300 focus:outline-none"
               >
-                {isProcessing ? 'Thinking...' : 'Send'}
+                {isProcessing ? (
+                  <div className="w-5 h-5 border-2 border-t-transparent border-white rounded-full animate-spin"></div>
+                ) : (
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                  </svg>
+                )}
               </button>
             </form>
           </div>
