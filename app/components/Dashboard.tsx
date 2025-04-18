@@ -198,12 +198,21 @@ export default function Dashboard() {
       
       try {
         setLoadingLoops(true);
+        console.log('Fetching loopz for user:', session.user.id);
+        
         const { data, error } = await supabase
           .from('loopz')
           .select('*')
+          .eq('user_id', session.user.id)
           .order('created_at', { ascending: false });
         
-        if (error) throw error;
+        if (error) {
+          console.error('Error fetching loopz:', error);
+          throw error;
+        }
+        
+        console.log('Loopz fetched successfully:', data);
+        console.log('Number of loopz found:', data ? data.length : 0);
         
         setLoops(data || []);
       } catch (error) {
@@ -222,13 +231,17 @@ export default function Dashboard() {
         event: '*', 
         schema: 'public', 
         table: 'loopz',
-        filter: `user_id=eq.${session?.user.id}`
+        filter: session?.user?.id ? `user_id=eq.${session.user.id}` : undefined
       }, (payload) => {
+        console.log('Received real-time update for loopz:', payload);
         fetchLoops();
       })
       .subscribe();
     
+    console.log('Subscribed to loopz changes for user:', session?.user?.id);
+    
     return () => {
+      console.log('Cleaning up loopz subscription');
       supabase.removeChannel(loopsSubscription);
     };
   }, [session, supabase]);
@@ -362,177 +375,194 @@ export default function Dashboard() {
   }, [isChatExpanded]);
 
   // Conditional rendering based on loading/session
-  if (loading || !session || !isDashboardVisible) { 
+  if (loading || !session) { 
     return null;
   }
 
   return (
     <>
       {/* Dashboard Panel - slides in from left */}
-      <motion.div
-        initial={{ x: '-100%' }}
-        animate={{ x: 0 }}
-        exit={{ x: '-100%' }}
-        transition={{ type: 'spring', damping: 20 }}
-        className="fixed inset-y-0 left-0 w-[85%] bg-white shadow-lg flex flex-col z-10"
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200">
-          <h1 className="text-xl font-semibold">Your Loopz</h1>
-          <button
-            onClick={handleSignOut}
-            className="px-3 py-1 text-sm bg-gray-700 text-white rounded hover:bg-gray-800"
-            aria-label="Sign out"
-          >
-            Sign Out
-          </button>
-        </div>
-
-        {/* Main Content (Loops) */}
-        <div className="flex-1 overflow-y-auto p-4">
-          <h2 className="font-medium text-sm text-gray-500 mb-3">My Loops</h2>
-          
-          {loadingLoops ? (
-            <div className="flex justify-center py-4">
-              <div className="w-6 h-6 border-2 border-t-black border-gray-200 rounded-full animate-spin"></div>
-            </div>
-          ) : loops.length === 0 ? (
-            <p className="text-sm text-gray-500 py-4">No loops yet. Start a conversation to create one.</p>
-          ) : (
-            <div className="space-y-2">
-              {loops.map(loop => (
-                <div 
-                  key={loop.id} 
-                  className="p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100"
-                  onClick={() => setSelectedLoopId(loop.id)}
+      <AnimatePresence>
+        {isDashboardVisible && (
+          <>
+            {/* Main Dashboard Panel */}
+            <motion.div
+              initial={{ x: '-100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '-100%' }}
+              transition={{ type: 'spring', damping: 20 }}
+              className="fixed inset-y-0 left-0 w-[85%] bg-white shadow-lg flex flex-col z-50"
+            >
+              {/* Header */}
+              <div className="flex items-center justify-between p-4 border-b border-gray-200">
+                <h1 className="text-xl font-semibold">Your Loopz</h1>
+                <button
+                  onClick={handleSignOut}
+                  className="px-3 py-1 text-sm bg-gray-700 text-white rounded hover:bg-gray-800"
+                  aria-label="Sign out"
                 >
-                  <h3 className="font-medium">{loop.title}</h3>
-                  <p className="text-xs text-gray-500 mt-1">
-                    Last updated {new Date(loop.updated_at).toLocaleDateString()}
-                  </p>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-        
-        {/* Chat Section */}
-        <div className="border-t border-gray-100">
-          {/* Expandable Chat Area */}
-          <AnimatePresence>
-            {isChatExpanded && (
-              <motion.div 
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: 'auto', opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.3, ease: "easeInOut" }}
-                className="bg-gray-50 overflow-y-auto"
-                style={{ maxHeight: '60vh' }}
-              >
-                <div className="flex items-center justify-between p-2 border-b border-gray-200 bg-white">
-                  <div className="text-sm text-gray-500">Conversation</div>
-                  <button 
-                    onClick={() => setIsChatExpanded(false)}
-                    className="p-1 text-gray-500 hover:text-gray-700 focus:outline-none"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                    </svg>
-                  </button>
-                </div>
-                <div className="p-4 space-y-2">
-                  {messages.map((message, index) => {
-                    // Check if this message is part of a sequence from the same sender
-                    const isFirstInSequence = index === 0 || messages[index - 1].isAI !== message.isAI;
-                    const isLastInSequence = index === messages.length - 1 || messages[index + 1].isAI !== message.isAI;
-                    
-                    // Determine border radius based on position in sequence
-                    let borderRadiusClass = '';
-                    if (message.isAI) {
-                      if (isFirstInSequence && isLastInSequence) {
-                        borderRadiusClass = 'rounded-2xl'; // Single message
-                      } else if (isFirstInSequence) {
-                        borderRadiusClass = 'rounded-t-2xl rounded-br-2xl rounded-bl-lg'; // First in sequence
-                      } else if (isLastInSequence) {
-                        borderRadiusClass = 'rounded-b-2xl rounded-tr-2xl rounded-tl-lg'; // Last in sequence
-                      } else {
-                        borderRadiusClass = 'rounded-r-2xl rounded-l-lg'; // Middle of sequence
-                      }
-                    } else {
-                      if (isFirstInSequence && isLastInSequence) {
-                        borderRadiusClass = 'rounded-2xl'; // Single message
-                      } else if (isFirstInSequence) {
-                        borderRadiusClass = 'rounded-t-2xl rounded-bl-2xl rounded-br-lg'; // First in sequence
-                      } else if (isLastInSequence) {
-                        borderRadiusClass = 'rounded-b-2xl rounded-tl-2xl rounded-tr-lg'; // Last in sequence
-                      } else {
-                        borderRadiusClass = 'rounded-l-2xl rounded-r-lg'; // Middle of sequence
-                      }
-                    }
-                    
-                    return (
-                      <div 
-                        key={message.id} 
-                        className={`flex ${message.isAI ? 'justify-start' : 'justify-end'}`}
-                      >
-                        <div 
-                          className={`px-4 py-2 max-w-[85%] ${borderRadiusClass} ${
-                            message.isAI 
-                              ? 'bg-gray-200 text-gray-800' 
-                              : 'bg-gray-800 text-white'
-                          } text-sm`}
-                        >
-                          {message.content}
-                        </div>
-                      </div>
-                    );
-                  })}
-                  <div ref={messagesEndRef} />
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-          
-          {/* Chat Input */}
-          <div className="bg-white p-3">
-            <form onSubmit={handleSubmit} className="flex items-center space-x-2">
-              <input
-                ref={inputRef}
-                type="text"
-                value={inputValue}
-                onClick={() => !isChatExpanded && setIsChatExpanded(true)}
-                onChange={(e) => setInputValue(e.target.value)}
-                placeholder="What's on your mind?"
-                disabled={isProcessing}
-                className="flex-1 px-4 py-2 text-sm border border-gray-100 rounded-full focus:outline-none focus:ring-1 focus:ring-gray-400 italic"
-              />
-              <button
-                type="submit"
-                disabled={!inputValue.trim() || isProcessing}
-                className="w-10 h-10 flex items-center justify-center bg-gray-800 text-white rounded-full disabled:bg-gray-300 focus:outline-none"
-              >
-                {isProcessing ? (
-                  <div className="w-5 h-5 border-2 border-t-transparent border-white rounded-full animate-spin"></div>
+                  Sign Out
+                </button>
+              </div>
+
+              {/* Main Content (Loops) */}
+              <div className="flex-1 overflow-y-auto p-4">
+                <h2 className="font-medium text-sm text-gray-500 mb-3">My Loops</h2>
+                
+                {loadingLoops ? (
+                  <div className="flex justify-center py-4">
+                    <div className="w-6 h-6 border-2 border-t-black border-gray-200 rounded-full animate-spin"></div>
+                  </div>
+                ) : loops.length === 0 ? (
+                  <p className="text-sm text-gray-500 py-4">No loops yet. Start a conversation to create one.</p>
                 ) : (
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                  </svg>
+                  <div className="space-y-2">
+                    {loops.map(loop => (
+                      <div 
+                        key={loop.id} 
+                        className="p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100"
+                        onClick={() => {
+                          setSelectedLoopId(loop.id);
+                          setDashboardVisible(false);
+                        }}
+                      >
+                        <h3 className="font-medium">{loop.title}</h3>
+                        <p className="text-xs text-gray-500 mt-1">
+                          Last updated {new Date(loop.updated_at).toLocaleDateString()}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
                 )}
-              </button>
-            </form>
-          </div>
-        </div>
-      </motion.div>
-      
-      {/* Overlay to close dashboard - 15% on the right side */}
-      <div 
-        className="fixed inset-y-0 right-0 w-[15%] z-5 cursor-pointer" 
-        onClick={() => setDashboardVisible(false)}
-      />
+              </div>
+              
+              {/* Chat Section */}
+              <div className="border-t border-gray-100">
+                {/* Expandable Chat Area */}
+                <AnimatePresence>
+                  {isChatExpanded && (
+                    <motion.div 
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.3, ease: "easeInOut" }}
+                      className="bg-gray-50 overflow-y-auto"
+                      style={{ maxHeight: '60vh' }}
+                    >
+                      <div className="flex items-center justify-between p-2 border-b border-gray-200 bg-white">
+                        <div className="text-sm text-gray-500">Conversation</div>
+                        <button 
+                          onClick={() => setIsChatExpanded(false)}
+                          className="p-1 text-gray-500 hover:text-gray-700 focus:outline-none"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                          </svg>
+                        </button>
+                      </div>
+                      <div className="p-4 space-y-2">
+                        {messages.map((message, index) => {
+                          // Check if this message is part of a sequence from the same sender
+                          const isFirstInSequence = index === 0 || messages[index - 1].isAI !== message.isAI;
+                          const isLastInSequence = index === messages.length - 1 || messages[index + 1].isAI !== message.isAI;
+                          
+                          // Determine border radius based on position in sequence
+                          let borderRadiusClass = '';
+                          if (message.isAI) {
+                            if (isFirstInSequence && isLastInSequence) {
+                              borderRadiusClass = 'rounded-2xl'; // Single message
+                            } else if (isFirstInSequence) {
+                              borderRadiusClass = 'rounded-t-2xl rounded-br-2xl rounded-bl-lg'; // First in sequence
+                            } else if (isLastInSequence) {
+                              borderRadiusClass = 'rounded-b-2xl rounded-tr-2xl rounded-tl-lg'; // Last in sequence
+                            } else {
+                              borderRadiusClass = 'rounded-r-2xl rounded-l-lg'; // Middle of sequence
+                            }
+                          } else {
+                            if (isFirstInSequence && isLastInSequence) {
+                              borderRadiusClass = 'rounded-2xl'; // Single message
+                            } else if (isFirstInSequence) {
+                              borderRadiusClass = 'rounded-t-2xl rounded-bl-2xl rounded-br-lg'; // First in sequence
+                            } else if (isLastInSequence) {
+                              borderRadiusClass = 'rounded-b-2xl rounded-tl-2xl rounded-tr-lg'; // Last in sequence
+                            } else {
+                              borderRadiusClass = 'rounded-l-2xl rounded-r-lg'; // Middle of sequence
+                            }
+                          }
+                          
+                          return (
+                            <div 
+                              key={message.id} 
+                              className={`flex ${message.isAI ? 'justify-start' : 'justify-end'}`}
+                            >
+                              <div 
+                                className={`px-4 py-2 max-w-[85%] ${borderRadiusClass} ${
+                                  message.isAI 
+                                    ? 'bg-gray-200 text-gray-800' 
+                                    : 'bg-gray-800 text-white'
+                                } text-sm`}
+                              >
+                                {message.content}
+                              </div>
+                            </div>
+                          );
+                        })}
+                        <div ref={messagesEndRef} />
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+                
+                {/* Chat Input */}
+                <div className="bg-white p-3">
+                  <form onSubmit={handleSubmit} className="flex items-center space-x-2">
+                    <input
+                      ref={inputRef}
+                      type="text"
+                      value={inputValue}
+                      onClick={() => !isChatExpanded && setIsChatExpanded(true)}
+                      onChange={(e) => setInputValue(e.target.value)}
+                      placeholder="What's on your mind?"
+                      disabled={isProcessing}
+                      className="flex-1 px-4 py-2 text-sm border border-gray-100 rounded-full focus:outline-none focus:ring-1 focus:ring-gray-400 italic"
+                    />
+                    <button
+                      type="submit"
+                      disabled={!inputValue.trim() || isProcessing}
+                      className="w-10 h-10 flex items-center justify-center bg-gray-800 text-white rounded-full disabled:bg-gray-300 focus:outline-none"
+                    >
+                      {isProcessing ? (
+                        <div className="w-5 h-5 border-2 border-t-transparent border-white rounded-full animate-spin"></div>
+                      ) : (
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                        </svg>
+                      )}
+                    </button>
+                  </form>
+                </div>
+              </div>
+            </motion.div>
+            
+            {/* Clickable overlay covering exactly the visible portion of the loop */}
+            <div 
+              className="fixed inset-y-0 right-0 w-[15%] cursor-pointer" 
+              onClick={() => setDashboardVisible(false)}
+              aria-label="Close dashboard and return to loop"
+              style={{ 
+                backgroundColor: 'rgba(0, 0, 0, 0.2)',
+                backdropFilter: 'blur(1px)',
+                zIndex: 45,
+                pointerEvents: 'all'
+              }}
+            />
+          </>
+        )}
+      </AnimatePresence>
       
       {/* Selected Loop Detail Overlay */}
       <AnimatePresence>
-        {selectedLoopId && (
+        {selectedLoopId ? (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -544,6 +574,19 @@ export default function Dashboard() {
               onClose={() => setSelectedLoopId(null)} 
             />
           </motion.div>
+        ) : isDashboardVisible ? null : (
+          <div className="flex flex-col items-center justify-center h-screen">
+            <div className="text-center p-6">
+              <h1 className="text-2xl font-semibold mb-4">Welcome to Loopz</h1>
+              <p className="text-gray-600 mb-6">Select a loop from the dashboard or start a new conversation.</p>
+              <button
+                onClick={() => setDashboardVisible(true)}
+                className="px-4 py-2 bg-black text-white rounded-lg"
+              >
+                Open Dashboard
+              </button>
+            </div>
+          </div>
         )}
       </AnimatePresence>
     </>
