@@ -14,8 +14,8 @@ export default function DashboardOverlay() {
   
   return (
     <div 
-      className="fixed top-0 right-0 w-[15%] h-full z-5 cursor-pointer" // Positioned on the right 15%
-      onClick={() => setDashboardVisible(false)} // Hide dashboard on click
+      className="fixed top-0 right-0 w-[15%] h-full z-40 cursor-pointer bg-transparent"
+      onClick={() => setDashboardVisible(false)}
       title="Click to hide dashboard"
       aria-label="Hide dashboard panel"
     />

@@ -101,7 +101,7 @@ const LandingPage = () => {
   };
   
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen px-4 py-12 bg-white overflow-hidden">
+    <div className="flex flex-col items-center justify-center min-h-screen px-4 py-12 bg-white overflow-hidden z-0">
       <motion.div 
         className="flex flex-col items-center max-w-md"
         variants={containerVariants}
@@ -124,6 +124,7 @@ const LandingPage = () => {
             src="/images/loopz-logo.png" 
             alt="Loopz Logo" 
             fill
+            sizes="(max-width: 768px) 100vw, 256px"
             priority
             style={{ objectFit: 'contain' }}
           />

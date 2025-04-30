@@ -7,13 +7,13 @@ export async function middleware(req: NextRequest) {
   const supabase = createMiddlewareClient({ req, res });
   
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
+    data: { user },
+  } = await supabase.auth.getUser();
 
   // Check auth condition
   if (req.nextUrl.pathname.startsWith('/dashboard')) {
     // If user is not signed in and the current path starts with /dashboard
-    if (!session) {
+    if (!user) {
       // Redirect to the home page
       const redirectUrl = req.nextUrl.clone();
       redirectUrl.pathname = '/';

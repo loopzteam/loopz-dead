@@ -25,7 +25,7 @@ interface LoopDetailProps {
 }
 
 export default function LoopDetail({ loopId, onClose }: LoopDetailProps) {
-  const { supabase } = useSupabase();
+  const { supabase, session } = useSupabase();
   const { setDashboardVisible } = useDashboard();
   const [loop, setLoop] = useState<Loop | null>(null);
   const [loading, setLoading] = useState(true);
@@ -70,7 +70,7 @@ export default function LoopDetail({ loopId, onClose }: LoopDetailProps) {
         // Fetch loop tasks
         const { data: taskData, error: taskError } = await supabase
           .from('steps')
-          .select('*')
+          .select('id, content, is_completed, order_num')
           .eq('loopz_id', loopId)
           .order('order_num', { ascending: true });
         
@@ -85,6 +85,8 @@ export default function LoopDetail({ loopId, onClose }: LoopDetailProps) {
         setTasks(taskData || []);
       } catch (error) {
         console.error('Error fetching loop data:', error);
+        setLoop(null);
+        setTasks([]);
       } finally {
         setLoading(false);
       }
@@ -250,7 +252,8 @@ export default function LoopDetail({ loopId, onClose }: LoopDetailProps) {
           content: newTaskItem.content, 
           is_completed: newTaskItem.is_completed, 
           order_num: newTaskItem.order_num,
-          loopz_id: loopId 
+          loopz_id: loopId,
+          user_id: session?.user.id
         }])
         .select();
       
@@ -314,7 +317,7 @@ export default function LoopDetail({ loopId, onClose }: LoopDetailProps) {
       if (loopId) {
         const { data } = await supabase
           .from('steps')
-          .select('*')
+          .select('id, content, is_completed, order_num')
           .eq('loopz_id', loopId)
           .order('order_num', { ascending: true });
         

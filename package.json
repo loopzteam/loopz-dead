@@ -8,7 +8,7 @@
     "db:test": "node scripts/test-supabase.js",
     "db:setup": "node lib/setup-db.js",
     "db:init": "npm run db:setup-function && npm run db:setup-schema",
-    "db:setup-function": "node -e \"require('dotenv').config(); const { createClient } = require('@supabase/supabase-js'); const fs = require('fs'); const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY); const sql = fs.readFileSync('lib/setup-supabase.sql', 'utf8'); supabase.from('_root').select('*').limit(1).then(() => { console.log('Executing setup-supabase.sql...'); supabase.rpc('pg_query', { query: sql }).catch(e => console.log('Creating initial pg_query function...'));}).catch(e => console.error('Error:', e))\"",
+    "db:setup-function": "node -e \"require('dotenv').config()); const { createClient } = require('@supabase/supabase-js'); const fs = require('fs'); const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY); const sql = fs.readFileSync('lib/setup-supabase.sql', 'utf8'); supabase.from('_root').select('*').limit(1).then(() => { console.log('Executing setup-supabase.sql...'); supabase.rpc('pg_query', { query: sql }).catch(e => console.log('Creating initial pg_query function...'));}).catch(e => console.error('Error:', e))\"",
     "db:setup-schema": "node lib/init-db.js"
   },
   "dependencies": {
@@ -26,13 +26,13 @@
     "dotenv": "^16.3.1",
     "framer-motion": "^10.18.0",
     "lucide-react": "^0.468.0",
-    "next": "latest",
+    "next": "^15.3.1",
     "next-themes": "^0.4.3",
     "node-fetch": "^3.3.2",
     "openai": "^4.95.0",
     "prettier": "^3.3.3",
-    "react": "19.0.0",
-    "react-dom": "19.0.0"
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
   },
   "devDependencies": {
     "@types/node": "22.10.2",
@@ -42,6 +42,6 @@
     "tailwind-merge": "^2.5.2",
     "tailwindcss": "3.4.17",
     "tailwindcss-animate": "^1.0.7",
-    "typescript": "5.7.2"
+    "typescript": "^5.8.3"
   }
 }
