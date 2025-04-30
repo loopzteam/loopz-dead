@@ -7,6 +7,7 @@
     "setup": "node scripts/setup.js",
     "db:test": "node scripts/test-supabase.js",
     "db:setup": "node lib/setup-db.js",
+    "db:update": "node lib/update-db.js",
     "db:init": "npm run db:setup-function && npm run db:setup-schema",
     "db:setup-function": "node -e \"require('dotenv').config()); const { createClient } = require('@supabase/supabase-js'); const fs = require('fs'); const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY); const sql = fs.readFileSync('lib/setup-supabase.sql', 'utf8'); supabase.from('_root').select('*').limit(1).then(() => { console.log('Executing setup-supabase.sql...'); supabase.rpc('pg_query', { query: sql }).catch(e => console.log('Creating initial pg_query function...'));}).catch(e => console.error('Error:', e))\"",
     "db:setup-schema": "node lib/init-db.js"
@@ -32,14 +33,16 @@
     "openai": "^4.95.0",
     "prettier": "^3.3.3",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "uuid": "^11.1.0",
+    "zustand": "^5.0.3"
   },
   "devDependencies": {
     "@types/node": "22.10.2",
     "@types/react": "^19.0.2",
     "@types/react-dom": "19.0.2",
     "postcss": "8.4.49",
-    "tailwind-merge": "^2.5.2",
+    "tailwind-merge": "^2.6.0",
     "tailwindcss": "3.4.17",
     "tailwindcss-animate": "^1.0.7",
     "typescript": "^5.8.3"
