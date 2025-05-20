@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useStore } from '../../store';
 import { Task, Microstep } from '../../types';
-import { motion } from 'framer-motion';
+import { MotionDiv } from '../../lib/motion';
 import { shallow } from 'zustand/shallow';
 
 interface TaskListProps {
@@ -123,7 +123,7 @@ export default function TaskList({ loopzId }: TaskListProps) {
           <span>{progressPercent}% Complete</span>
         </div>
         <div className="w-full bg-gray-200 rounded-full h-2.5">
-          <motion.div
+          <MotionDiv
             className="bg-black h-2.5 rounded-full"
             initial={{ width: 0 }}
             animate={{ width: `${progressPercent}%` }}

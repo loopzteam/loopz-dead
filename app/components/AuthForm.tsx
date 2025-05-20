@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { MotionDiv, MotionForm, MotionButton } from '../lib/motion';
 import { useRouter } from 'next/navigation';
 import { useSupabase } from './SupabaseProvider';
 
@@ -119,42 +119,42 @@ const AuthForm = () => {
   };
 
   return (
-    <motion.div
+    <MotionDiv
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
       className="p-6 bg-white rounded-lg shadow-none"
     >
       {error && (
-        <motion.div
+        <MotionDiv
           className="mb-4 p-3 bg-red-50 text-red-600 text-sm rounded-md"
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
         >
           {error}
-        </motion.div>
+        </MotionDiv>
       )}
 
       {success && (
-        <motion.div
+        <MotionDiv
           className="mb-4 p-3 bg-green-50 text-green-600 text-sm rounded-md"
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
         >
           {success}
-        </motion.div>
+        </MotionDiv>
       )}
 
-      <motion.form
+      <MotionForm
         onSubmit={mode === 'signin' ? handleSignIn : handleSignUp}
         className="space-y-4"
         variants={formVariants}
         initial="hidden"
         animate="visible"
       >
-        <motion.div variants={itemVariants}>
+        <MotionDiv variants={itemVariants}>
           <input
             type="email"
             value={email}
@@ -164,9 +164,9 @@ const AuthForm = () => {
             required
             disabled={loading}
           />
-        </motion.div>
+        </MotionDiv>
 
-        <motion.div variants={itemVariants}>
+        <MotionDiv variants={itemVariants}>
           <input
             type="password"
             value={password}
@@ -176,9 +176,9 @@ const AuthForm = () => {
             required
             disabled={loading}
           />
-        </motion.div>
+        </MotionDiv>
 
-        <motion.button
+        <MotionButton
           type="submit"
           className={`w-full px-4 py-2 text-sm font-medium text-white bg-black rounded-full focus:outline-none focus:ring-2 focus:ring-gray-400 ${
             loading ? 'opacity-70 cursor-not-allowed' : 'hover:bg-gray-800'
@@ -213,10 +213,10 @@ const AuthForm = () => {
           ) : (
             'Sign Up'
           )}
-        </motion.button>
-      </motion.form>
+        </MotionButton>
+      </MotionForm>
 
-      <motion.div
+      <MotionDiv
         className="mt-6 text-center"
         variants={itemVariants}
         initial="hidden"
@@ -229,7 +229,7 @@ const AuthForm = () => {
             {mode === 'signin' ? 'Sign up' : 'Sign in'}
           </span>
         </p>
-      </motion.div>
+      </MotionDiv>
 
       <div className="flex items-center my-6">
         <div className="flex-1 h-px bg-gray-300"></div>
@@ -238,7 +238,7 @@ const AuthForm = () => {
       </div>
 
       <div className="space-y-3">
-        <motion.button
+        <MotionButton
           className="w-full px-4 py-2 text-sm font-medium border border-gray-300 rounded-full hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-gray-400"
           whileHover={{ scale: 1.01, backgroundColor: 'rgba(0,0,0,0.02)' }}
           whileTap={{ scale: 0.99 }}
@@ -246,9 +246,9 @@ const AuthForm = () => {
           disabled={loading}
         >
           Continue with Apple
-        </motion.button>
+        </MotionButton>
 
-        <motion.button
+        <MotionButton
           className="w-full px-4 py-2 text-sm font-medium border border-gray-300 rounded-full hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-gray-400"
           whileHover={{ scale: 1.01, backgroundColor: 'rgba(0,0,0,0.02)' }}
           whileTap={{ scale: 0.99 }}
@@ -256,9 +256,9 @@ const AuthForm = () => {
           disabled={loading}
         >
           Continue with Google
-        </motion.button>
+        </MotionButton>
       </div>
-    </motion.div>
+    </MotionDiv>
   );
 };
 

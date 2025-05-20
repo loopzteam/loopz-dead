@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { MotionDiv } from '../lib/motion';
 import LoopzItem from './LoopzItem';
 import { Loopz } from '../types';
 
@@ -22,14 +22,14 @@ const LoopzList: React.FC<LoopzListProps> = ({ loopzList, onSelectLoopz }) => {
   };
 
   return (
-    <motion.div
+    <MotionDiv
       className="py-4 px-2 overflow-y-auto flex-1 mb-16" // mb-16 to account for the fixed chat input
       variants={containerVariants}
       initial="hidden"
       animate="visible"
     >
       {loopzList.length === 0 ? (
-        <motion.div
+        <MotionDiv
           className="text-center py-10 text-gray-500"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -37,13 +37,13 @@ const LoopzList: React.FC<LoopzListProps> = ({ loopzList, onSelectLoopz }) => {
         >
           <p>No open loops yet. Share a thought below.</p>
           <p className="mt-2 text-sm">Your mind will be clearer soon.</p>
-        </motion.div>
+        </MotionDiv>
       ) : (
         loopzList.map((loopz) => (
           <LoopzItem key={loopz.id} loopz={loopz} onSelect={onSelectLoopz} />
         ))
       )}
-    </motion.div>
+    </MotionDiv>
   );
 };
 
