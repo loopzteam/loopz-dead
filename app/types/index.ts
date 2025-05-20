@@ -41,6 +41,8 @@ export interface Task {
   is_expanded?: boolean;
 }
 
+export type Step = Task;
+
 export interface Microstep {
   id: string;
   task_id: string;
@@ -51,7 +53,7 @@ export interface Microstep {
   updated_at: string;
 }
 
-export interface Message {
+export type Message = {
   id?: string;
   loopz_id?: string;
   role: 'user' | 'assistant' | 'system';
@@ -60,7 +62,7 @@ export interface Message {
   isAI?: boolean; // For backward compatibility
   timestamp?: Date; // For backward compatibility
   created_at: string;
-}
+};
 
 // Legacy type for backward compatibility
 export interface ChatMessage {
