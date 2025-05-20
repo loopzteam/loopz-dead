@@ -16,32 +16,31 @@ const AuthForm = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  
+
   // Switch between sign in and sign up forms
   const toggleMode = () => {
     setMode(mode === 'signin' ? 'signup' : 'signin');
     setError(null);
     setSuccess(null);
   };
-  
+
   // Handle sign in with Supabase
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
-    
+
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
-        password
+        password,
       });
-      
+
       if (error) throw error;
-      
+
       setSuccess('Sign in successful!');
       // Redirect or update UI after successful sign in
       setTimeout(() => router.push('/dashboard'), 1000);
-      
     } catch (err: any) {
       setError(err.message || 'An error occurred during sign in');
       console.error('Sign in error:', err);
@@ -49,23 +48,22 @@ const AuthForm = () => {
       setLoading(false);
     }
   };
-  
+
   // Handle sign up with Supabase
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
-    
+
     try {
       const { data, error } = await supabase.auth.signUp({
         email,
-        password
+        password,
       });
-      
+
       if (error) throw error;
-      
+
       setSuccess('Sign up successful! Please check your email for verification.');
-      
     } catch (err: any) {
       setError(err.message || 'An error occurred during sign up');
       console.error('Sign up error:', err);
@@ -73,54 +71,53 @@ const AuthForm = () => {
       setLoading(false);
     }
   };
-  
+
   // Handle sign in with social providers
   const handleSocialSignIn = async (provider: 'google' | 'apple') => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`
-        }
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
       });
-      
+
       if (error) throw error;
-      
+
       // The redirect happens automatically, no need to handle here
-      
     } catch (err: any) {
       setError(err.message || `An error occurred during ${provider} sign in`);
       console.error(`${provider} sign in error:`, err);
       setLoading(false);
     }
   };
-  
+
   // Don't render the auth form at all if signed in
   if (session) {
     return null;
   }
-  
+
   // Animation variants
   const formVariants = {
     hidden: { opacity: 0 },
-    visible: { 
+    visible: {
       opacity: 1,
-      transition: { staggerChildren: 0.1, delayChildren: 0.2 }
-    }
+      transition: { staggerChildren: 0.1, delayChildren: 0.2 },
+    },
   };
-  
+
   const itemVariants = {
     hidden: { y: 10, opacity: 0 },
-    visible: { 
-      y: 0, 
+    visible: {
+      y: 0,
       opacity: 1,
-      transition: { duration: 0.4 }
-    }
+      transition: { duration: 0.4 },
+    },
   };
-  
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -129,7 +126,7 @@ const AuthForm = () => {
       className="p-6 bg-white rounded-lg shadow-none"
     >
       {error && (
-        <motion.div 
+        <motion.div
           className="mb-4 p-3 bg-red-50 text-red-600 text-sm rounded-md"
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -138,9 +135,9 @@ const AuthForm = () => {
           {error}
         </motion.div>
       )}
-      
+
       {success && (
-        <motion.div 
+        <motion.div
           className="mb-4 p-3 bg-green-50 text-green-600 text-sm rounded-md"
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -149,8 +146,8 @@ const AuthForm = () => {
           {success}
         </motion.div>
       )}
-      
-      <motion.form 
+
+      <motion.form
         onSubmit={mode === 'signin' ? handleSignIn : handleSignUp}
         className="space-y-4"
         variants={formVariants}
@@ -168,7 +165,7 @@ const AuthForm = () => {
             disabled={loading}
           />
         </motion.div>
-        
+
         <motion.div variants={itemVariants}>
           <input
             type="password"
@@ -180,7 +177,7 @@ const AuthForm = () => {
             disabled={loading}
           />
         </motion.div>
-        
+
         <motion.button
           type="submit"
           className={`w-full px-4 py-2 text-sm font-medium text-white bg-black rounded-full focus:outline-none focus:ring-2 focus:ring-gray-400 ${
@@ -194,7 +191,15 @@ const AuthForm = () => {
           {loading ? (
             <span className="flex items-center justify-center">
               <svg className="w-5 h-5 mr-2 animate-spin" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                  fill="none"
+                />
                 <path
                   className="opacity-75"
                   fill="currentColor"
@@ -210,8 +215,8 @@ const AuthForm = () => {
           )}
         </motion.button>
       </motion.form>
-      
-      <motion.div 
+
+      <motion.div
         className="mt-6 text-center"
         variants={itemVariants}
         initial="hidden"
@@ -219,24 +224,21 @@ const AuthForm = () => {
         transition={{ delay: 0.3 }}
       >
         <p className="text-sm text-gray-600">
-          {mode === 'signin' ? "Don't have an account? " : "Already have an account? "}
-          <span 
-            className="text-blue-600 cursor-pointer hover:underline"
-            onClick={toggleMode}
-          >
+          {mode === 'signin' ? "Don't have an account? " : 'Already have an account? '}
+          <span className="text-blue-600 cursor-pointer hover:underline" onClick={toggleMode}>
             {mode === 'signin' ? 'Sign up' : 'Sign in'}
           </span>
         </p>
       </motion.div>
-      
+
       <div className="flex items-center my-6">
         <div className="flex-1 h-px bg-gray-300"></div>
         <p className="px-3 text-sm text-gray-500">or</p>
         <div className="flex-1 h-px bg-gray-300"></div>
       </div>
-      
+
       <div className="space-y-3">
-        <motion.button 
+        <motion.button
           className="w-full px-4 py-2 text-sm font-medium border border-gray-300 rounded-full hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-gray-400"
           whileHover={{ scale: 1.01, backgroundColor: 'rgba(0,0,0,0.02)' }}
           whileTap={{ scale: 0.99 }}
@@ -245,8 +247,8 @@ const AuthForm = () => {
         >
           Continue with Apple
         </motion.button>
-        
-        <motion.button 
+
+        <motion.button
           className="w-full px-4 py-2 text-sm font-medium border border-gray-300 rounded-full hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-gray-400"
           whileHover={{ scale: 1.01, backgroundColor: 'rgba(0,0,0,0.02)' }}
           whileTap={{ scale: 0.99 }}
@@ -260,4 +262,4 @@ const AuthForm = () => {
   );
 };
 
-export default AuthForm; 
+export default AuthForm;

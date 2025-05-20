@@ -25,12 +25,14 @@ After setting up the database, you should be able to:
 ### Issue: "Invalid references to auth.users"
 
 If you see an error about references to `auth.users`, make sure that:
+
 1. You're using the same Supabase project that your app is connected to
 2. You're logged in with an admin account
 
 ### Issue: "Database Setup Error"
 
 If you see a generic database setup error:
+
 1. Check that your service role key is valid in `.env.local`
 2. Try running the SQL manually in the Supabase SQL Editor
 
@@ -39,11 +41,11 @@ If you see a generic database setup error:
 To check if your tables exist and have the correct schema, run this query in the SQL Editor:
 
 ```sql
-SELECT table_name, column_name, data_type 
-FROM information_schema.columns 
-WHERE table_schema = 'public' 
+SELECT table_name, column_name, data_type
+FROM information_schema.columns
+WHERE table_schema = 'public'
 AND table_name IN ('loops', 'tasks')
 ORDER BY table_name, ordinal_position;
 ```
 
-This will show you all columns in both tables and their data types. 
+This will show you all columns in both tables and their data types.

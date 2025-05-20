@@ -13,7 +13,9 @@ This directory contains the SQL schema for Loopz app database tables.
 ## Tables Structure
 
 ### Loops Table
+
 This table stores the main loop information:
+
 - `id`: Unique identifier for the loop
 - `title`: The title of the loop
 - `user_id`: ID of the user who owns the loop
@@ -21,7 +23,9 @@ This table stores the main loop information:
 - `updated_at`: Timestamp when the loop was last updated
 
 ### Tasks Table
+
 This table stores tasks associated with loops:
+
 - `id`: Unique identifier for the task
 - `loop_id`: The ID of the loop this task belongs to
 - `content`: The task description
@@ -32,6 +36,7 @@ This table stores tasks associated with loops:
 ## Row Level Security (RLS)
 
 The schema includes Row Level Security policies to ensure users can only:
+
 - View their own loops
 - Create loops for themselves
 - Update and delete only their own loops
@@ -40,5 +45,6 @@ The schema includes Row Level Security policies to ensure users can only:
 ## Indexes
 
 Indexes are created on:
+
 - `loops.user_id` for faster user-specific queries
-- `tasks.loop_id` for faster task lookup within loops 
+- `tasks.loop_id` for faster task lookup within loops

@@ -16,15 +16,10 @@ export default function SupabaseProvider({
   initialSession: Session | null;
   children: React.ReactNode;
 }) {
-  const [supabaseClient] = useState(() =>
-    createPagesBrowserClient()
-  );
+  const [supabaseClient] = useState(() => createPagesBrowserClient());
 
   return (
-    <SessionContextProvider
-      supabaseClient={supabaseClient}
-      initialSession={initialSession}
-    >
+    <SessionContextProvider supabaseClient={supabaseClient} initialSession={initialSession}>
       {children}
     </SessionContextProvider>
   );

@@ -12,26 +12,26 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSend, isDisabled = false }) => 
   const [input, setInput] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
   const { isProcessing, processInput } = useAI();
-  
+
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    
+
     if (!input.trim() || isDisabled || isProcessing) return;
-    
+
     const message = input.trim();
     setInput('');
-    
+
     const aiResponse = await processInput(message);
     onSend(message, aiResponse);
   };
-  
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSubmit();
     }
   };
-  
+
   return (
     <div className="bg-white p-3 border-t border-gray-100">
       <form onSubmit={handleSubmit} className="flex items-center">
@@ -57,4 +57,4 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSend, isDisabled = false }) => 
   );
 };
 
-export default ChatInput; 
+export default ChatInput;
