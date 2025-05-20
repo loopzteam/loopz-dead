@@ -24,6 +24,7 @@ const LoopzDetail: React.FC<LoopzDetailProps> = ({ loopz, onClose, isVisible }) 
         {
           id: '1',
           loopz_id: loopz.id,
+          role: 'user',
           content: 'I need to plan my vacation trip to Japan.',
           role: 'user',
           isAI: false,
@@ -32,6 +33,7 @@ const LoopzDetail: React.FC<LoopzDetailProps> = ({ loopz, onClose, isVisible }) 
         {
           id: '2',
           loopz_id: loopz.id,
+          role: 'assistant',
           content:
             "I notice you're thinking about planning a trip to Japan. That sounds exciting! What aspects of the trip are you most focused on right now?",
           role: 'assistant',
@@ -74,6 +76,7 @@ const LoopzDetail: React.FC<LoopzDetailProps> = ({ loopz, onClose, isVisible }) 
     const userMessage: Message = {
       id: Date.now().toString(),
       loopz_id: loopz.id,
+      role: 'user',
       content,
       role: 'user',
       isAI: false,
@@ -84,6 +87,7 @@ const LoopzDetail: React.FC<LoopzDetailProps> = ({ loopz, onClose, isVisible }) 
     const aiMessage: Message = {
       id: (Date.now() + 1).toString(),
       loopz_id: loopz.id,
+      role: 'assistant',
       content: aiResponse.reflection + (aiResponse.coaching ? `\n\n${aiResponse.coaching}` : ''),
       role: 'assistant',
       isAI: true,
