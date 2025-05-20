@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
+import { MotionDiv, MotionButton } from '../lib/motion';
 import ChatInput from './ChatInput';
 import { Loopz, Message, Step } from '../types';
 
@@ -24,6 +25,7 @@ const LoopzDetail: React.FC<LoopzDetailProps> = ({ loopz, onClose, isVisible }) 
           id: '1',
           loopz_id: loopz.id,
           content: 'I need to plan my vacation trip to Japan.',
+          role: 'user',
           isAI: false,
           created_at: new Date().toISOString(),
         },
@@ -32,6 +34,7 @@ const LoopzDetail: React.FC<LoopzDetailProps> = ({ loopz, onClose, isVisible }) 
           loopz_id: loopz.id,
           content:
             "I notice you're thinking about planning a trip to Japan. That sounds exciting! What aspects of the trip are you most focused on right now?",
+          role: 'assistant',
           isAI: true,
           created_at: new Date().toISOString(),
         },
@@ -72,6 +75,7 @@ const LoopzDetail: React.FC<LoopzDetailProps> = ({ loopz, onClose, isVisible }) 
       id: Date.now().toString(),
       loopz_id: loopz.id,
       content,
+      role: 'user',
       isAI: false,
       created_at: new Date().toISOString(),
     };
@@ -81,6 +85,7 @@ const LoopzDetail: React.FC<LoopzDetailProps> = ({ loopz, onClose, isVisible }) 
       id: (Date.now() + 1).toString(),
       loopz_id: loopz.id,
       content: aiResponse.reflection + (aiResponse.coaching ? `\n\n${aiResponse.coaching}` : ''),
+      role: 'assistant',
       isAI: true,
       created_at: new Date().toISOString(),
     };
@@ -111,7 +116,7 @@ const LoopzDetail: React.FC<LoopzDetailProps> = ({ loopz, onClose, isVisible }) 
   return (
     <AnimatePresence>
       {isVisible && (
-        <motion.div
+        <MotionDiv
           className="fixed inset-0 bg-white z-20 flex flex-col"
           initial={{ x: '100%' }}
           animate={{ x: 0 }}
@@ -119,7 +124,7 @@ const LoopzDetail: React.FC<LoopzDetailProps> = ({ loopz, onClose, isVisible }) 
           transition={{ type: 'spring', damping: 30, stiffness: 300 }}
         >
           <div className="bg-white border-b border-gray-200 p-4 flex items-center">
-            <motion.button
+            <MotionButton
               onClick={onClose}
               className="mr-3 p-1"
               whileHover={{ scale: 1.1 }}
@@ -139,7 +144,7 @@ const LoopzDetail: React.FC<LoopzDetailProps> = ({ loopz, onClose, isVisible }) 
                   d="M15 19l-7-7 7-7"
                 />
               </svg>
-            </motion.button>
+            </MotionButton>
             <h2 className="text-lg font-medium flex-1">{loopz.title}</h2>
           </div>
 
@@ -148,7 +153,7 @@ const LoopzDetail: React.FC<LoopzDetailProps> = ({ loopz, onClose, isVisible }) 
               <h3 className="font-medium text-lg mb-3">Steps</h3>
               {steps.map((step) => (
                 <div key={step.id} className="flex items-center mb-2">
-                  <motion.div
+                  <MotionDiv
                     className={`w-5 h-5 rounded-full border mr-3 flex items-center justify-center cursor-pointer ${step.isCompleted ? 'bg-black border-black' : 'border-gray-400'}`}
                     onClick={() => toggleStepCompletion(step.id)}
                     whileHover={{ scale: 1.1 }}
@@ -170,7 +175,7 @@ const LoopzDetail: React.FC<LoopzDetailProps> = ({ loopz, onClose, isVisible }) 
                         />
                       </svg>
                     )}
-                  </motion.div>
+                  </MotionDiv>
                   <span className={step.isCompleted ? 'line-through text-gray-500' : ''}>
                     {step.content}
                   </span>
@@ -198,7 +203,7 @@ const LoopzDetail: React.FC<LoopzDetailProps> = ({ loopz, onClose, isVisible }) 
           </div>
 
           <ChatInput onSend={handleNewMessage} />
-        </motion.div>
+          </MotionDiv>
       )}
     </AnimatePresence>
   );

@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
+import { MotionDiv } from '../lib/motion';
 import { useStore } from '../store';
 import { HeadCoach } from './coach';
 import { TaskList } from './tasks';
@@ -96,7 +97,7 @@ export default function DashboardRefactored() {
     <>
       <AnimatePresence>
         {isDashboardVisible && (
-          <motion.div
+          <MotionDiv
             className="fixed inset-y-0 left-0 w-[85%] bg-white shadow-lg flex flex-col z-30"
             initial={{ x: '-100%' }}
             animate={{ x: 0 }}
@@ -149,14 +150,14 @@ export default function DashboardRefactored() {
             <div className="border-t">
               <HeadCoach />
             </div>
-          </motion.div>
+          </MotionDiv>
         )}
       </AnimatePresence>
 
       {/* Loop detail overlay */}
       <AnimatePresence>
         {selectedLoopzId && showLoopDetail && (
-          <motion.div
+          <MotionDiv
             className="fixed inset-0 bg-white z-20"
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
@@ -225,7 +226,7 @@ export default function DashboardRefactored() {
                 <TaskList loopzId={selectedLoopzId} />
               </div>
             </div>
-          </motion.div>
+          </MotionDiv>
         )}
       </AnimatePresence>
     </>
