@@ -10,7 +10,7 @@ interface LoopzItemProps {
 
 const LoopzItem: React.FC<LoopzItemProps> = ({ loopz, onSelect }) => {
   const progressPercentage = Math.round((loopz.completedSteps / loopz.totalSteps) * 100) || 0;
-  
+
   return (
     <motion.div
       onClick={() => onSelect(loopz)}
@@ -22,10 +22,10 @@ const LoopzItem: React.FC<LoopzItemProps> = ({ loopz, onSelect }) => {
       transition={{ duration: 0.3 }}
     >
       <h3 className="font-medium text-lg mb-2">{loopz.title}</h3>
-      
+
       <div className="flex items-center">
         <div className="flex-1 bg-gray-200 rounded-full h-2 mr-2">
-          <motion.div 
+          <motion.div
             className="bg-black rounded-full h-2"
             initial={{ width: 0 }}
             animate={{ width: `${progressPercentage}%` }}
@@ -40,4 +40,4 @@ const LoopzItem: React.FC<LoopzItemProps> = ({ loopz, onSelect }) => {
   );
 };
 
-export default LoopzItem; 
+export default LoopzItem;

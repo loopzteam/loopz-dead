@@ -17,12 +17,14 @@ Loopz is a Next.js application with Supabase integration focused on providing a 
 ### Installation
 
 1. Clone the repository:
+
 ```bash
 git clone https://github.com/loopzteam/loopz.git
 cd loopz
 ```
 
 2. Install dependencies:
+
 ```bash
 npm install
 # or
@@ -30,10 +32,12 @@ yarn install
 ```
 
 3. Set up environment variables:
+
    - Copy `.env.local.example` to `.env.local`
    - Fill in your Supabase credentials
 
 4. Run the development server:
+
 ```bash
 npm run dev
 # or
@@ -47,15 +51,19 @@ yarn dev
 Loopz includes an automated database setup tool to ensure your Supabase schema is properly configured.
 
 1. Configure additional environment variables in `.env.local`:
+
    ```
    SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
    SUPABASE_SETUP_TOKEN=your_secure_random_token
    ```
+
    You can find your service role key in your Supabase project settings under API. The setup token should be a secure random string you generate.
 
 2. Create the `exec_sql` function in Supabase:
+
    - Go to your Supabase dashboard > SQL Editor
    - Create a new query with the following SQL:
+
    ```sql
    CREATE OR REPLACE FUNCTION public.exec_sql(query text)
    RETURNS void
@@ -70,6 +78,7 @@ Loopz includes an automated database setup tool to ensure your Supabase schema i
    -- Grant usage to authenticated users
    GRANT EXECUTE ON FUNCTION public.exec_sql TO authenticated;
    ```
+
    - Run the query
 
 3. Run the setup script:

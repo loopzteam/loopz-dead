@@ -18,13 +18,13 @@ export default function HeadCoach({ loopzId }: HeadCoachProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Global state from Zustand store - use individual selectors to avoid unstable references
-  const user = useStore(state => state.user);
-  const addLoopz = useStore(state => state.addLoopz);
-  const setCurrentLoopzId = useStore(state => state.setCurrentLoopzId);
-  const setTasks = useStore(state => state.setTasks);
-  const setDashboardVisible = useStore(state => state.setDashboardVisible);
-  const setSelectedLoopzId = useStore(state => state.setSelectedLoopzId);
-  const setShowLoopDetail = useStore(state => state.setShowLoopDetail);
+  const user = useStore((state) => state.user);
+  const addLoopz = useStore((state) => state.addLoopz);
+  const setCurrentLoopzId = useStore((state) => state.setCurrentLoopzId);
+  const setTasks = useStore((state) => state.setTasks);
+  const setDashboardVisible = useStore((state) => state.setDashboardVisible);
+  const setSelectedLoopzId = useStore((state) => state.setSelectedLoopzId);
+  const setShowLoopDetail = useStore((state) => state.setShowLoopDetail);
 
   // Scroll to bottom on new messages
   useEffect(() => {
@@ -40,7 +40,7 @@ export default function HeadCoach({ loopzId }: HeadCoachProps) {
   const handleSendMessage = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!inputText.trim() || isSubmitting || !user) return;
-    
+
     try {
       setIsSubmitting(true);
       setError(null);
@@ -50,9 +50,9 @@ export default function HeadCoach({ loopzId }: HeadCoachProps) {
         role: 'user',
         content: inputText.trim(),
         phase: 'reflection', // Initial user input is a reflection
-        created_at: new Date().toISOString()
+        created_at: new Date().toISOString(),
       };
-      
+
       const updatedMessages = [...messages, newUserMessage];
       setMessages(updatedMessages);
       setInputText('');
@@ -62,15 +62,15 @@ export default function HeadCoach({ loopzId }: HeadCoachProps) {
       const payload = {
         messages: updatedMessages,
         userId: user.id, // Server will use the authenticated session user ID for database operations
-        loopzId // This will be undefined for a new loop, or the ID for continuing a conversation
+        loopzId, // This will be undefined for a new loop, or the ID for continuing a conversation
       };
 
       // Call our API route
-      console.log('Sending payload to API:', { 
+      console.log('Sending payload to API:', {
         messageCount: payload.messages.length,
-        userId: payload.userId.slice(0, 8) + '...'
+        userId: payload.userId.slice(0, 8) + '...',
       });
-      
+
       const response = await fetch('/api/create-loopz-from-thread', {
         method: 'POST',
         headers: {
@@ -85,38 +85,38 @@ export default function HeadCoach({ loopzId }: HeadCoachProps) {
       }
 
       const data = await response.json();
-      console.log('API response received:', { 
-        hasLoop: !!data.loop, 
+      console.log('API response received:', {
+        hasLoop: !!data.loop,
         hasTasks: !!data.tasks,
         taskCount: data.tasks?.length || 0,
-        debug: data.debug || 'No debug info'
+        debug: data.debug || 'No debug info',
       });
-      
+
       // Update our local chat with the AI's response
       const assistantMessage: Message = {
         role: 'assistant',
         content: data.aiResponse,
         phase: 'clarification', // AI's first response clarifies the goal
-        created_at: new Date().toISOString()
+        created_at: new Date().toISOString(),
       };
-      
+
       setMessages([...updatedMessages, assistantMessage]);
 
       // If this is a new loop, we'll get back a new loop and tasks to add to our state
       if (data.loop && data.tasks) {
         console.log('Updating global state with loop and tasks', {
           loopId: data.loop.id,
-          taskCount: data.tasks.length
+          taskCount: data.tasks.length,
         });
-        
+
         // Add the new loop to our global state
         addLoopz(data.loop);
         console.log('Called addLoopz with:', data.loop);
-        
+
         // Set this as the current loop
         setCurrentLoopzId(data.loop.id);
         console.log('Called setCurrentLoopzId with:', data.loop.id);
-        
+
         // Add the tasks to our global state
         setTasks(data.tasks);
         console.log('Called setTasks with:', data.tasks.length, 'tasks');
@@ -162,22 +162,22 @@ export default function HeadCoach({ loopzId }: HeadCoachProps) {
             </p>
           </div>
         )}
-        
+
         {messages.map((message, index) => (
           <div
             key={index}
-            className={`flex ${
-              message.role === 'user' ? 'justify-end' : 'justify-start'
-            }`}
+            className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
           >
-            <div className={`px-4 py-2 max-w-[80%] ${
-              message.role === 'user' ? 'bg-black text-white' : 'bg-gray-200 text-black'
-            } rounded-2xl text-sm`}>
+            <div
+              className={`px-4 py-2 max-w-[80%] ${
+                message.role === 'user' ? 'bg-black text-white' : 'bg-gray-200 text-black'
+              } rounded-2xl text-sm`}
+            >
               {message.content}
             </div>
           </div>
         ))}
-        
+
         {isSubmitting && (
           <div className="flex justify-start">
             <div className="px-4 py-2 bg-gray-200 rounded-2xl text-sm flex items-center">
@@ -186,18 +186,16 @@ export default function HeadCoach({ loopzId }: HeadCoachProps) {
             </div>
           </div>
         )}
-        
+
         {error && (
           <div className="flex justify-center">
-            <div className="px-4 py-2 bg-red-100 text-red-700 rounded-2xl text-sm">
-              {error}
-            </div>
+            <div className="px-4 py-2 bg-red-100 text-red-700 rounded-2xl text-sm">{error}</div>
           </div>
         )}
-        
+
         <div ref={messagesEndRef} />
       </div>
-      
+
       {/* Input area */}
       <div className="p-3 bg-white border-t">
         <form onSubmit={handleSendMessage} className="flex items-center space-x-2">
@@ -207,9 +205,7 @@ export default function HeadCoach({ loopzId }: HeadCoachProps) {
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
             placeholder={
-              !loopzId 
-                ? "Describe what's on your mind..."
-                : "Ask a follow-up question..."
+              !loopzId ? "Describe what's on your mind..." : 'Ask a follow-up question...'
             }
             className="flex-1 px-4 py-2 border rounded-full focus:outline-none text-sm"
             disabled={isSubmitting}
@@ -222,8 +218,17 @@ export default function HeadCoach({ loopzId }: HeadCoachProps) {
             {isSubmitting ? (
               <div className="w-5 h-5 border-2 border-t-transparent rounded-full animate-spin" />
             ) : (
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M5.293 9.707l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z" clipRule="evenodd" />
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M5.293 9.707l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z"
+                  clipRule="evenodd"
+                />
               </svg>
             )}
           </button>

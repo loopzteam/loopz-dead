@@ -71,9 +71,9 @@ export default function Dashboard() {
       id: Date.now().toString(),
       content: inputValue.trim(),
       isAI: false,
-      timestamp: new Date()
+      timestamp: new Date(),
     };
-    setMessages(prev => [...prev, userMsg]);
+    setMessages((prev) => [...prev, userMsg]);
     const text = inputValue.trim();
     setInputValue('');
     setIsProcessing(true);
@@ -88,12 +88,15 @@ export default function Dashboard() {
     // Decline suggestion
     if (loopzSuggestion && /^(no|cancel|not now)/i.test(text)) {
       setLoopzSuggestion(null);
-      setMessages(prev => [...prev, {
-        id: Date.now().toString(),
-        content: "Okay, no loopz created. Anything else?",
-        isAI: true,
-        timestamp: new Date()
-      }]);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now().toString(),
+          content: 'Okay, no loopz created. Anything else?',
+          isAI: true,
+          timestamp: new Date(),
+        },
+      ]);
       setIsProcessing(false);
       return;
     }
@@ -104,52 +107,67 @@ export default function Dashboard() {
 
       // Reflection
       if (aiRes.reflection) {
-        setMessages(prev => [...prev, {
-          id: (Date.now()+1).toString(),
-          content: aiRes.reflection,
-          isAI: true,
-          timestamp: new Date()
-        }]);
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: (Date.now() + 1).toString(),
+            content: aiRes.reflection,
+            isAI: true,
+            timestamp: new Date(),
+          },
+        ]);
       }
 
       // Coaching
       if (aiRes.coaching) {
-        setTimeout(() => {
-          setMessages(prev => [...prev, {
-            id: (Date.now()+2).toString(),
-            content: aiRes.coaching!,
-            isAI: true,
-            timestamp: new Date()
-          }]);
-        }, 800);
+        // Instead of using setTimeout, add an effect dependency that will trigger the new message
+        // after the first message has been added to state
+        const coachingMessage = {
+          id: (Date.now() + 2).toString(),
+          content: aiRes.coaching!,
+          isAI: true,
+          timestamp: new Date(),
+        };
+
+        // Schedule in the next frame to avoid batched state updates
+        requestAnimationFrame(() => {
+          setMessages((prev) => [...prev, coachingMessage]);
+        });
       }
 
       // Suggest loopz
       if (aiRes.shouldCreateLoopz && aiRes.suggestedTitle) {
         setLoopzSuggestion({
           title: aiRes.suggestedTitle,
-          tasks: aiRes.tasks
+          tasks: aiRes.tasks,
         });
-        setTimeout(() => {
-          setMessages(prev => [...prev, {
-            id: (Date.now()+3).toString(),
-            content: `Create a loopz called "${aiRes.suggestedTitle}" to track this?`,
-            isAI: true,
-            timestamp: new Date()
-          }]);
-        }, 1200);
+
+        const loopzSuggestionMessage = {
+          id: (Date.now() + 3).toString(),
+          content: `Create a loopz called "${aiRes.suggestedTitle}" to track this?`,
+          isAI: true,
+          timestamp: new Date(),
+        };
+
+        // Use Promise.resolve().then() to schedule in next microtask,
+        // avoiding setTimeout which could cause re-render loops
+        Promise.resolve().then(() => {
+          setMessages((prev) => [...prev, loopzSuggestionMessage]);
+        });
       } else {
         setLoopzSuggestion(null);
       }
-
     } catch (err) {
       console.error(err);
-      setMessages(prev => [...prev, {
-        id: (Date.now()+1).toString(),
-        content: "Sorry, I couldn't process that. Try again?",
-        isAI: true,
-        timestamp: new Date()
-      }]);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: (Date.now() + 1).toString(),
+          content: "Sorry, I couldn't process that. Try again?",
+          isAI: true,
+          timestamp: new Date(),
+        },
+      ]);
     } finally {
       setIsProcessing(false);
     }
@@ -176,14 +194,22 @@ export default function Dashboard() {
 
     sub = supabase
       .channel('loopz-ch')
-      .on('postgres_changes', {
-        event: '*', schema: 'public', table: 'loopz',
-        filter: `user_id=eq.${session.user.id}`
-      }, () => loadLoopz())
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'loopz',
+          filter: `user_id=eq.${session.user.id}`,
+        },
+        () => loadLoopz(),
+      )
       .subscribe();
 
     // Make cleanup synchronous
-    return () => { supabase.removeChannel(sub); };
+    return () => {
+      supabase.removeChannel(sub);
+    };
   }, [session, supabase]);
 
   // Create loopz handler
@@ -191,12 +217,15 @@ export default function Dashboard() {
     if (!loopzSuggestion || !session) return;
     setIsCreatingLoopz(true);
 
-    setMessages(prev => [...prev, {
-      id: Date.now().toString(),
-      content: `Creating your "${loopzSuggestion.title}" loopz...`,
-      isAI: true,
-      timestamp: new Date()
-    }]);
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: Date.now().toString(),
+        content: `Creating your "${loopzSuggestion.title}" loopz...`,
+        isAI: true,
+        timestamp: new Date(),
+      },
+    ]);
 
     try {
       const { data, error } = await supabase
@@ -207,45 +236,61 @@ export default function Dashboard() {
       const newId = data?.[0]?.id;
 
       if (loopzSuggestion.tasks?.length && newId) {
-        await supabase
-          .from('steps')
-          .insert(loopzSuggestion.tasks.map((t,i) => ({
+        await supabase.from('steps').insert(
+          loopzSuggestion.tasks.map((t, i) => ({
             loopz_id: newId,
             content: t,
             is_completed: false,
-            order_num: i
-          })));
+            order_num: i,
+          })),
+        );
       }
 
       setLoopzSuggestion(null);
-      setMessages(prev => [...prev, {
-        id: (Date.now()+1).toString(),
-        content: `Done! "${loopzSuggestion.title}" created. Opening now…`,
-        isAI: true,
-        timestamp: new Date()
-      }]);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: (Date.now() + 1).toString(),
+          content: `Done! "${loopzSuggestion.title}" created. Opening now…`,
+          isAI: true,
+          timestamp: new Date(),
+        },
+      ]);
 
-      setTimeout(() => {
-        if (newId) {
-          setLoopzList(prev => [
-            { id: newId, title: loopzSuggestion.title, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+      // Use requestAnimationFrame for better animation timing
+      if (newId) {
+        // Schedule the state updates for the next animation frame
+        requestAnimationFrame(() => {
+          setLoopzList((prev) => [
+            {
+              id: newId,
+              title: loopzSuggestion.title,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            },
             ...prev,
           ]);
           setSelectedLoopzId(newId);
           setShowLoopDetail(true);
-          setTimeout(() => setDashboardVisible(false), 100);
-          setIsChatExpanded(false);
-        }
-      }, 800);
 
+          // Schedule dashboard visibility for the next frame
+          requestAnimationFrame(() => {
+            setDashboardVisible(false);
+            setIsChatExpanded(false);
+          });
+        });
+      }
     } catch (err) {
       console.error('Create loopz error:', err);
-      setMessages(prev => [...prev, {
-        id: Date.now().toString(),
-        content: "Couldn't create loopz. Try later?",
-        isAI: true,
-        timestamp: new Date()
-      }]);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now().toString(),
+          content: "Couldn't create loopz. Try later?",
+          isAI: true,
+          timestamp: new Date(),
+        },
+      ]);
     } finally {
       setIsCreatingLoopz(false);
     }
@@ -260,7 +305,9 @@ export default function Dashboard() {
       <AnimatePresence>
         {isDashboardVisible && (
           <motion.div
-            {...{ className: "fixed inset-y-0 left-0 w-[85%] bg-white shadow-lg flex flex-col z-30" } as any}
+            {...({
+              className: 'fixed inset-y-0 left-0 w-[85%] bg-white shadow-lg flex flex-col z-30',
+            } as any)}
             initial={{ x: '-100%' }}
             animate={{ x: 0 }}
             exit={{ x: '-100%' }}
@@ -283,14 +330,15 @@ export default function Dashboard() {
               ) : loopzList.length === 0 ? (
                 <p className="text-gray-500">No loopz yet. Start chatting to create one.</p>
               ) : (
-                loopzList.map(lz => (
+                loopzList.map((lz) => (
                   <div
                     key={lz.id}
                     className="p-3 bg-gray-50 rounded mb-2 cursor-pointer hover:bg-gray-100"
                     onClick={() => {
                       setSelectedLoopzId(lz.id);
                       setShowLoopDetail(true);
-                      setTimeout(() => setDashboardVisible(false), 100);
+                      // Use requestAnimationFrame instead of setTimeout for smoother animation
+                      requestAnimationFrame(() => setDashboardVisible(false));
                     }}
                   >
                     <h3 className="font-medium">{lz.title}</h3>
@@ -307,7 +355,7 @@ export default function Dashboard() {
               <AnimatePresence>
                 {isChatExpanded && (
                   <motion.div
-                    {...{ className: "bg-gray-50 overflow-y-auto" } as any}
+                    {...({ className: 'bg-gray-50 overflow-y-auto' } as any)}
                     initial={{ height: 0, opacity: 0 }}
                     animate={{ height: 'auto', opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }}
@@ -316,12 +364,22 @@ export default function Dashboard() {
                   >
                     <div className="flex justify-between items-center p-2 bg-white border-b">
                       <span className="text-sm text-gray-500">Conversation</span>
-                      <button onClick={() => setIsChatExpanded(false)} className="p-1 text-gray-500">✕</button>
+                      <button
+                        onClick={() => setIsChatExpanded(false)}
+                        className="p-1 text-gray-500"
+                      >
+                        ✕
+                      </button>
                     </div>
                     <div className="p-4 space-y-2">
-                      {messages.map(m => (
-                        <div key={m.id} className={`flex ${m.isAI ? 'justify-start' : 'justify-end'}`}>
-                          <div className={`px-4 py-2 max-w-[80%] ${m.isAI ? 'bg-gray-200 text-black' : 'bg-black text-white'} rounded-2xl text-sm`}>
+                      {messages.map((m) => (
+                        <div
+                          key={m.id}
+                          className={`flex ${m.isAI ? 'justify-start' : 'justify-end'}`}
+                        >
+                          <div
+                            className={`px-4 py-2 max-w-[80%] ${m.isAI ? 'bg-gray-200 text-black' : 'bg-black text-white'} rounded-2xl text-sm`}
+                          >
                             {m.content}
                           </div>
                         </div>
@@ -339,7 +397,7 @@ export default function Dashboard() {
                     type="text"
                     value={inputValue}
                     onClick={() => !isChatExpanded && setIsChatExpanded(true)}
-                    onChange={e => setInputValue(e.target.value)}
+                    onChange={(e) => setInputValue(e.target.value)}
                     placeholder="What's on your mind?"
                     disabled={isProcessing}
                     className="flex-1 px-4 py-2 border rounded-full focus:outline-none italic text-sm"
@@ -352,8 +410,17 @@ export default function Dashboard() {
                     {isProcessing ? (
                       <div className="w-5 h-5 border-2 border-t-transparent rounded-full animate-spin" />
                     ) : (
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M5.293 9.707l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M5.293 9.707l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z"
+                          clipRule="evenodd"
+                        />
                       </svg>
                     )}
                   </button>
@@ -368,7 +435,7 @@ export default function Dashboard() {
       <AnimatePresence>
         {selectedLoopzId && showLoopDetail && (
           <motion.div
-            {...{ className: "fixed inset-0 bg-white z-20" } as any}
+            {...({ className: 'fixed inset-0 bg-white z-20' } as any)}
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
             exit={{ x: '100%' }}

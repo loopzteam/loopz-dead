@@ -1,6 +1,6 @@
 /**
  * Standardized database schema types
- * 
+ *
  * This file defines the canonical types for database interaction,
  * ensuring consistency between the application and database.
  */
@@ -69,33 +69,68 @@ export const SCHEMA = {
   loopz: {
     table: 'loopz',
     fields: [
-      'id', 'user_id', 'title', 'description', 'sentiment_score',
-      'created_at', 'updated_at', 'progress', 'totalSteps', 'completedSteps'
+      'id',
+      'user_id',
+      'title',
+      'description',
+      'sentiment_score',
+      'created_at',
+      'updated_at',
+      'progress',
+      'totalSteps',
+      'completedSteps',
     ],
-    required: ['id', 'user_id', 'title', 'created_at', 'updated_at']
+    required: ['id', 'user_id', 'title', 'created_at', 'updated_at'],
   },
   tasks: {
     table: 'tasks',
     fields: [
-      'id', 'loopz_id', 'user_id', 'title', 'is_completed', 
-      'position', 'created_at', 'updated_at'
+      'id',
+      'loopz_id',
+      'user_id',
+      'title',
+      'is_completed',
+      'position',
+      'created_at',
+      'updated_at',
     ],
-    required: ['id', 'loopz_id', 'user_id', 'title', 'is_completed', 'position', 'created_at', 'updated_at']
+    required: [
+      'id',
+      'loopz_id',
+      'user_id',
+      'title',
+      'is_completed',
+      'position',
+      'created_at',
+      'updated_at',
+    ],
   },
   microsteps: {
     table: 'microsteps',
     fields: [
-      'id', 'task_id', 'user_id', 'title', 'is_completed', 
-      'position', 'created_at', 'updated_at'
+      'id',
+      'task_id',
+      'user_id',
+      'title',
+      'is_completed',
+      'position',
+      'created_at',
+      'updated_at',
     ],
-    required: ['id', 'task_id', 'user_id', 'title', 'is_completed', 'position', 'created_at', 'updated_at']
+    required: [
+      'id',
+      'task_id',
+      'user_id',
+      'title',
+      'is_completed',
+      'position',
+      'created_at',
+      'updated_at',
+    ],
   },
   messages: {
     table: 'messages',
-    fields: [
-      'id', 'loopz_id', 'user_id', 'role', 'phase', 
-      'content', 'created_at', 'updated_at'
-    ],
-    required: ['id', 'loopz_id', 'user_id', 'role', 'content', 'created_at', 'updated_at']
-  }
+    fields: ['id', 'loopz_id', 'user_id', 'role', 'phase', 'content', 'created_at', 'updated_at'],
+    required: ['id', 'loopz_id', 'user_id', 'role', 'content', 'created_at', 'updated_at'],
+  },
 };

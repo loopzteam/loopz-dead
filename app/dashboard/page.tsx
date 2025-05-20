@@ -4,28 +4,38 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Dashboard from '../components/Dashboard';
 import DashboardRefactored from '../components/DashboardRefactored';
-import { useStore, loadUserData } from '../store';
+import { useStore } from '../store';
 import { DashboardProvider } from '../components/DashboardContext';
+import { shallow } from 'zustand/shallow';
 
 // Set this to true to use the refactored dashboard
 const USE_REFACTORED = false;
 
 export default function DashboardPage() {
   const router = useRouter();
-  const { user, authLoading, setDashboardVisible } = useStore(state => ({
-    user: state.user,
-    authLoading: state.authLoading,
-    setDashboardVisible: state.setDashboardVisible
-  }));
-  
+
+  // Use individual selectors for better performance
+  const user = useStore((state) => state.user);
+  const authLoading = useStore((state) => state.authLoading);
+
+  // Get stable references to actions and helper functions
+  const { setDashboardVisible, loadUserData } = useStore(
+    (state) => ({
+      setDashboardVisible: state.setDashboardVisible,
+      loadUserData: state.loadUserData,
+    }),
+    shallow,
+  );
+
   // Load user data on mount
   useEffect(() => {
+    // Use the function from store directly, avoiding useStore.getState()
     loadUserData();
-    
+
     // Show dashboard on load
     setDashboardVisible(true);
-  }, []);
-  
+  }, [loadUserData, setDashboardVisible]);
+
   // Redirect to login if not authenticated
   useEffect(() => {
     if (!authLoading && !user) {

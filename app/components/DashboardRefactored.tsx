@@ -1,48 +1,45 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '../store';
 import { HeadCoach } from './coach';
 import { TaskList } from './tasks';
 import LoopDetail from './LoopDetail';
 import { ChatMessage } from '../types';
+import { shallow } from 'zustand/shallow';
 
 export default function DashboardRefactored() {
-  // Global state from Zustand store
-  const { 
-    user,
-    loopzList,
-    isDashboardVisible, 
-    showLoopDetail,
-    selectedLoopzId,
-    isChatExpanded,
+  // Use individual selectors with shallow comparison for UI state
+  const user = useStore((state) => state.user);
+  const loopzList = useStore((state) => state.loopzList || []);
+  const isDashboardVisible = useStore((state) => state.isDashboardVisible);
+  const showLoopDetail = useStore((state) => state.showLoopDetail);
+  const selectedLoopzId = useStore((state) => state.selectedLoopzId);
+  const isChatExpanded = useStore((state) => state.isChatExpanded);
+  const messages = useStore((state) => state.messages || []);
+  const authLoading = useStore((state) => state.authLoading);
+  const loopzLoading = useStore((state) => state.loopzLoading);
+
+  // Get action functions (these references are stable in Zustand)
+  const {
     setDashboardVisible,
     setShowLoopDetail,
     setSelectedLoopzId,
     setChatExpanded,
-    messages,
     addUserMessage,
     addAIMessage,
-    authLoading,
-    loopzLoading
-  } = useStore(state => ({
-    user: state.user,
-    loopzList: state.loopzList || [],
-    isDashboardVisible: state.isDashboardVisible,
-    showLoopDetail: state.showLoopDetail,
-    selectedLoopzId: state.selectedLoopzId,
-    isChatExpanded: state.isChatExpanded,
-    setDashboardVisible: state.setDashboardVisible,
-    setShowLoopDetail: state.setShowLoopDetail,
-    setSelectedLoopzId: state.setSelectedLoopzId,
-    setChatExpanded: state.setChatExpanded,
-    messages: state.messages || [],
-    addUserMessage: state.addUserMessage,
-    addAIMessage: state.addAIMessage,
-    authLoading: state.authLoading,
-    loopzLoading: state.loopzLoading
-  }));
+  } = useStore(
+    (state) => ({
+      setDashboardVisible: state.setDashboardVisible,
+      setShowLoopDetail: state.setShowLoopDetail,
+      setSelectedLoopzId: state.setSelectedLoopzId,
+      setChatExpanded: state.setChatExpanded,
+      addUserMessage: state.addUserMessage,
+      addAIMessage: state.addAIMessage,
+    }),
+    shallow, // Use shallow comparison for these action functions
+  );
 
   // Local state
   const [inputValue, setInputValue] = useState('');
@@ -55,13 +52,35 @@ export default function DashboardRefactored() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Handle sign out
-  const handleSignOut = async () => {
+  // Memoized handler for loop item click to avoid recreating functions in the loop
+  const handleLoopClick = useCallback(
+    (loopId: string) => {
+      setSelectedLoopzId(loopId);
+      setShowLoopDetail(true);
+      // Use requestAnimationFrame instead of setTimeout to avoid unnecessary re-renders
+      requestAnimationFrame(() => setDashboardVisible(false));
+    },
+    [setSelectedLoopzId, setShowLoopDetail, setDashboardVisible],
+  );
+
+  // Memoized handler for showing dashboard
+  const handleShowDashboard = useCallback(() => {
+    setDashboardVisible(true);
+    setShowLoopDetail(false);
+  }, [setDashboardVisible, setShowLoopDetail]);
+
+  // Memoized handler for closing detail view
+  const handleCloseDetail = useCallback(() => {
+    setShowLoopDetail(false);
+  }, [setShowLoopDetail]);
+
+  // Handle sign out - memoized to avoid recreating on each render
+  const handleSignOut = useCallback(async () => {
     const { createClientComponentClient } = await import('@supabase/auth-helpers-nextjs');
     const supabase = createClientComponentClient();
     await supabase.auth.signOut();
     window.location.href = '/';
-  };
+  }, []);
 
   if (authLoading) {
     return (
@@ -101,21 +120,17 @@ export default function DashboardRefactored() {
               ) : loopzList.length === 0 ? (
                 <p className="text-gray-500">No loopz yet. Start chatting to create one.</p>
               ) : (
-                loopzList.map(lz => (
+                loopzList.map((lz) => (
                   <div
                     key={lz.id}
                     className="p-3 bg-gray-50 rounded mb-2 cursor-pointer hover:bg-gray-100"
-                    onClick={() => {
-                      setSelectedLoopzId(lz.id);
-                      setShowLoopDetail(true);
-                      setTimeout(() => setDashboardVisible(false), 100);
-                    }}
+                    onClick={() => handleLoopClick(lz.id)}
                   >
                     <h3 className="font-medium">{lz.title}</h3>
                     {lz.progress !== undefined && (
                       <div className="mt-1">
                         <div className="w-full bg-gray-200 rounded-full h-1.5">
-                          <div 
+                          <div
                             className="bg-black h-1.5 rounded-full"
                             style={{ width: `${lz.progress}%` }}
                           />
@@ -158,34 +173,53 @@ export default function DashboardRefactored() {
               <div className="p-4 border-b border-gray-200 flex items-center">
                 <div className="flex items-center flex-1">
                   <button
-                    onClick={() => {
-                      setDashboardVisible(true);
-                      setShowLoopDetail(false);
-                    }}
+                    onClick={handleShowDashboard}
                     className="p-2 mr-3 hover:bg-gray-100 rounded-full"
                     aria-label="Show Dashboard"
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-6 w-6"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M4 6h16M4 12h16M4 18h16"
+                      />
                     </svg>
                   </button>
-                  
+
                   <h1 className="text-xl font-semibold">
-                    {loopzList.find(l => l.id === selectedLoopzId)?.title || 'Loop Detail'}
+                    {loopzList.find((l) => l.id === selectedLoopzId)?.title || 'Loop Detail'}
                   </h1>
                 </div>
-                
+
                 <button
-                  onClick={() => setShowLoopDetail(false)}
+                  onClick={handleCloseDetail}
                   className="p-2 hover:bg-gray-100 rounded-full"
                   aria-label="Close"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-6 w-6"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
                   </svg>
                 </button>
               </div>
-              
+
               {/* Task List */}
               <div className="flex-1 overflow-auto p-4">
                 <TaskList loopzId={selectedLoopzId} />

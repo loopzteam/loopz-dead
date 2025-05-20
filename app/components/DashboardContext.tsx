@@ -13,11 +13,11 @@ const DashboardContext = createContext<DashboardContextType | undefined>(undefin
 export function DashboardProvider({ children }: { children: ReactNode }) {
   const { session, loading } = useSupabase(); // Also get loading state
   const [isDashboardVisible, setDashboardVisible] = useState(false);
-  
+
   // When session or loading state changes, update dashboard visibility
   useEffect(() => {
     // Only change visibility once loading is complete
-    if (!loading) { 
+    if (!loading) {
       if (session) {
         setDashboardVisible(true); // Show dashboard if logged in
       } else {
@@ -25,7 +25,7 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
       }
     }
   }, [session, loading]); // Depend on session and loading
-  
+
   return (
     <DashboardContext.Provider value={{ isDashboardVisible, setDashboardVisible }}>
       {children}
@@ -39,4 +39,4 @@ export function useDashboard() {
     throw new Error('useDashboard must be used within a DashboardProvider');
   }
   return context;
-} 
+}

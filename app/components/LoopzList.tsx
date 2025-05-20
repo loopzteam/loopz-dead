@@ -16,20 +16,20 @@ const LoopzList: React.FC<LoopzListProps> = ({ loopzList, onSelectLoopz }) => {
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.1
-      }
-    }
+        staggerChildren: 0.1,
+      },
+    },
   };
-  
+
   return (
-    <motion.div 
+    <motion.div
       className="py-4 px-2 overflow-y-auto flex-1 mb-16" // mb-16 to account for the fixed chat input
       variants={containerVariants}
       initial="hidden"
       animate="visible"
     >
       {loopzList.length === 0 ? (
-        <motion.div 
+        <motion.div
           className="text-center py-10 text-gray-500"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -39,16 +39,12 @@ const LoopzList: React.FC<LoopzListProps> = ({ loopzList, onSelectLoopz }) => {
           <p className="mt-2 text-sm">Your mind will be clearer soon.</p>
         </motion.div>
       ) : (
-        loopzList.map(loopz => (
-          <LoopzItem 
-            key={loopz.id} 
-            loopz={loopz} 
-            onSelect={onSelectLoopz} 
-          />
+        loopzList.map((loopz) => (
+          <LoopzItem key={loopz.id} loopz={loopz} onSelect={onSelectLoopz} />
         ))
       )}
     </motion.div>
   );
 };
 
-export default LoopzList; 
+export default LoopzList;

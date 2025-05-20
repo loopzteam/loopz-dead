@@ -10,35 +10,35 @@ import StoreDebug from './store-debug';
 
 export default function TestCoachPage() {
   const { session } = useSupabase();
-  const user = useStore(state => state.user);
-  const setUser = useStore(state => state.setUser);
-  const loopzList = useStore(state => state.loopzList);
-  const tasks = useStore(state => state.tasks);
-  const currentLoopzId = useStore(state => state.currentLoopzId);
+  const user = useStore((state) => state.user);
+  const setUser = useStore((state) => state.setUser);
+  const loopzList = useStore((state) => state.loopzList);
+  const tasks = useStore((state) => state.tasks);
+  const currentLoopzId = useStore((state) => state.currentLoopzId);
 
   const [debugInfo, setDebugInfo] = useState<{
-    apiCallStarted?: boolean,
-    apiResponse?: any,
-    error?: string
+    apiCallStarted?: boolean;
+    apiResponse?: any;
+    error?: string;
   }>({});
 
   // Monitor store changes for testing
   useEffect(() => {
     if (currentLoopzId) {
-      const currentLoop = loopzList.find(loop => loop.id === currentLoopzId);
+      const currentLoop = loopzList.find((loop) => loop.id === currentLoopzId);
       if (currentLoop) {
-        setDebugInfo(prev => ({
+        setDebugInfo((prev) => ({
           ...prev,
           apiResponse: {
             loop: currentLoop,
-            tasks: tasks.filter(task => task.loopz_id === currentLoopzId)
-          }
+            tasks: tasks.filter((task) => task.loopz_id === currentLoopzId),
+          },
         }));
-        
+
         // Log success for debugging
         console.log('STATE UPDATE: Loop created and loaded in state', {
           loop: currentLoop,
-          tasksCount: tasks.filter(task => task.loopz_id === currentLoopzId).length
+          tasksCount: tasks.filter((task) => task.loopz_id === currentLoopzId).length,
         });
       }
     }
@@ -55,15 +55,15 @@ export default function TestCoachPage() {
   // Add global error handler to catch OpenAI or other API errors
   useEffect(() => {
     const originalConsoleError = console.error;
-    
+
     console.error = (...args) => {
-      setDebugInfo(prev => ({
+      setDebugInfo((prev) => ({
         ...prev,
-        error: typeof args[0] === 'string' ? args[0] : 'Error occurred. Check browser console.'
+        error: typeof args[0] === 'string' ? args[0] : 'Error occurred. Check browser console.',
       }));
       originalConsoleError(...args);
     };
-    
+
     return () => {
       console.error = originalConsoleError;
     };
@@ -72,37 +72,37 @@ export default function TestCoachPage() {
   // Hook into fetch for API monitoring
   useEffect(() => {
     const originalFetch = window.fetch;
-    
+
     window.fetch = async (input, init) => {
       const url = typeof input === 'string' ? input : input.url;
-      
+
       if (url.includes('/api/create-loopz-from-thread')) {
-        setDebugInfo(prev => ({ 
-          ...prev, 
+        setDebugInfo((prev) => ({
+          ...prev,
           apiCallStarted: true,
-          error: null // Clear any previous errors
+          error: null, // Clear any previous errors
         }));
         console.log('Starting API call to create-loopz-from-thread');
       }
-      
+
       try {
         const response = await originalFetch(input, init);
-        
+
         // Intercept and log API responses for debugging
         if (url.includes('/api/create-loopz-from-thread')) {
           // Clone the response so we can read it and still return the original
           const responseClone = response.clone();
-          
+
           try {
             const data = await responseClone.json();
-            
+
             // Check for API error responses
             if (!response.ok) {
               console.error('API error:', data);
-              setDebugInfo(prev => ({ 
-                ...prev, 
+              setDebugInfo((prev) => ({
+                ...prev,
                 error: data.error || `API error: ${response.status} ${response.statusText}`,
-                errorDetails: data.details || data.message || null
+                errorDetails: data.details || data.message || null,
               }));
             } else {
               console.log('API call successful:', data);
@@ -111,21 +111,21 @@ export default function TestCoachPage() {
             console.error('Failed to parse API response:', parseError);
           }
         }
-        
+
         return response;
       } catch (error) {
         if (url.includes('/api/create-loopz-from-thread')) {
           console.error('API call failed with exception:', error);
-          setDebugInfo(prev => ({ 
-            ...prev, 
+          setDebugInfo((prev) => ({
+            ...prev,
             error: error instanceof Error ? error.message : 'API call failed',
-            errorDetails: error instanceof Error ? error.stack : null
+            errorDetails: error instanceof Error ? error.stack : null,
           }));
         }
         throw error;
       }
     };
-    
+
     return () => {
       window.fetch = originalFetch;
     };
@@ -134,7 +134,7 @@ export default function TestCoachPage() {
   return (
     <div className="container mx-auto p-4 h-screen overflow-auto">
       <h1 className="text-2xl font-bold mb-4">Test HeadCoach Component</h1>
-      
+
       {!session ? (
         <div className="p-4 bg-yellow-100 rounded-lg text-yellow-800 mb-4">
           Please sign in to test the HeadCoach component. It requires authentication.
@@ -149,11 +149,11 @@ export default function TestCoachPage() {
           <div className="border rounded-lg shadow-sm flex-1 overflow-hidden">
             <HeadCoach />
           </div>
-          
+
           {/* Debug Panel */}
           <div className="border rounded-lg shadow-sm p-4 w-full md:w-96 overflow-auto bg-gray-50">
             <h2 className="text-lg font-bold mb-2">Debug Panel</h2>
-            
+
             <div className="mb-4">
               <h3 className="font-semibold">Auth Status:</h3>
               <div className="bg-white p-2 rounded text-sm">
@@ -168,7 +168,7 @@ export default function TestCoachPage() {
                 )}
               </div>
             </div>
-            
+
             <div className="mb-4">
               <h3 className="font-semibold">API Status:</h3>
               <div className="bg-white p-2 rounded text-sm">
@@ -179,7 +179,7 @@ export default function TestCoachPage() {
                 )}
               </div>
             </div>
-            
+
             {debugInfo.error && (
               <div className="mb-4">
                 <h3 className="font-semibold text-red-600">Error:</h3>
@@ -190,8 +190,8 @@ export default function TestCoachPage() {
                       <details>
                         <summary>Error Details</summary>
                         <pre className="whitespace-pre-wrap overflow-x-auto">
-                          {typeof debugInfo.errorDetails === 'string' 
-                            ? debugInfo.errorDetails 
+                          {typeof debugInfo.errorDetails === 'string'
+                            ? debugInfo.errorDetails
                             : JSON.stringify(debugInfo.errorDetails, null, 2)}
                         </pre>
                       </details>
@@ -200,7 +200,7 @@ export default function TestCoachPage() {
                 </div>
               </div>
             )}
-            
+
             {debugInfo.apiResponse && (
               <div className="mb-4">
                 <h3 className="font-semibold text-green-600">API Response:</h3>
@@ -226,18 +226,26 @@ export default function TestCoachPage() {
                 </div>
               </div>
             )}
-            
+
             {/* Store State Debug */}
             <div className="mb-4">
               <h3 className="font-semibold text-blue-600">Store State:</h3>
               <div className="bg-blue-50 border border-blue-200 p-2 rounded text-sm">
-                <div><strong>User:</strong> {user ? `${user.id.slice(0, 8)}...` : 'Not set'}</div>
-                <div><strong>Current Loop ID:</strong> {currentLoopzId || 'Not set'}</div>
-                <div><strong>Loops in Store:</strong> {loopzList.length}</div>
-                <div><strong>Tasks in Store:</strong> {tasks.length}</div>
+                <div>
+                  <strong>User:</strong> {user ? `${user.id.slice(0, 8)}...` : 'Not set'}
+                </div>
+                <div>
+                  <strong>Current Loop ID:</strong> {currentLoopzId || 'Not set'}
+                </div>
+                <div>
+                  <strong>Loops in Store:</strong> {loopzList.length}
+                </div>
+                <div>
+                  <strong>Tasks in Store:</strong> {tasks.length}
+                </div>
               </div>
             </div>
-            
+
             <div className="mt-4">
               <h3 className="font-semibold">Testing Instructions:</h3>
               <ol className="list-decimal pl-5 text-sm space-y-1">
