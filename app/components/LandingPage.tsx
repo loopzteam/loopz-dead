@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
+import { MotionDiv, MotionButton, MotionH1, MotionP } from '../lib/motion';
 import AuthForm from './AuthForm';
 import { useSupabase } from './SupabaseProvider';
 import { useDashboard } from './DashboardContext';
@@ -102,17 +103,17 @@ const LandingPage = () => {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen px-4 py-12 bg-white overflow-hidden z-0">
-      <motion.div
+      <MotionDiv
         className="flex flex-col items-center max-w-md"
         variants={containerVariants}
         initial="hidden"
         animate="visible"
       >
-        <motion.h1 className="mb-6 text-3xl font-bold text-center" variants={itemVariants}>
+        <MotionH1 className="mb-6 text-3xl font-bold text-center" variants={itemVariants}>
           Loopz
-        </motion.h1>
+        </MotionH1>
 
-        <motion.div className="relative w-64 h-64 mb-8" variants={logoVariants} whileHover="hover">
+        <MotionDiv className="relative w-64 h-64 mb-8" variants={logoVariants} whileHover="hover">
           <Image
             src="/images/loopz-logo.png"
             alt="Loopz Logo"
@@ -121,11 +122,11 @@ const LandingPage = () => {
             priority
             style={{ objectFit: 'contain' }}
           />
-        </motion.div>
+        </MotionDiv>
 
         <div className="h-20 mb-8 flex items-center justify-center">
           <AnimatePresence mode="wait">
-            <motion.p
+            <MotionP
               key={currentQuoteIndex}
               className="text-lg text-center text-gray-700"
               variants={quoteVariants}
@@ -134,11 +135,11 @@ const LandingPage = () => {
               exit="exit"
             >
               {quotes[currentQuoteIndex]}
-            </motion.p>
+            </MotionP>
           </AnimatePresence>
         </div>
 
-        <motion.button
+        <MotionButton
           variants={itemVariants}
           whileHover={{
             scale: 1.05,
@@ -149,12 +150,12 @@ const LandingPage = () => {
           className="px-4 py-2 text-sm font-medium text-white bg-black rounded-full hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-400"
         >
           Untangle Your Mind
-        </motion.button>
+        </MotionButton>
 
         {!session && (
           <AnimatePresence>
             {showAuth && (
-              <motion.div
+              <MotionDiv
                 initial={{ opacity: 0, y: 30, height: 0 }}
                 animate={{
                   opacity: 1,
@@ -177,11 +178,11 @@ const LandingPage = () => {
                 className="w-full max-w-sm mt-6"
               >
                 <AuthForm />
-              </motion.div>
+              </MotionDiv>
             )}
           </AnimatePresence>
         )}
-      </motion.div>
+      </MotionDiv>
     </div>
   );
 };

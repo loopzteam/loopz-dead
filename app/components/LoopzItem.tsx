@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { MotionDiv } from '../lib/motion';
 import { Loopz } from '../types';
 
 interface LoopzItemProps {
@@ -9,10 +9,12 @@ interface LoopzItemProps {
 }
 
 const LoopzItem: React.FC<LoopzItemProps> = ({ loopz, onSelect }) => {
-  const progressPercentage = Math.round((loopz.completedSteps / loopz.totalSteps) * 100) || 0;
+  const progressPercentage = Math.round(
+    ((loopz.completedSteps ?? 0) / (loopz.totalSteps ?? 1)) * 100,
+  );
 
   return (
-    <motion.div
+    <MotionDiv
       onClick={() => onSelect(loopz)}
       className="bg-white rounded-xl p-4 mb-4 shadow-sm border border-gray-100 cursor-pointer"
       whileHover={{ scale: 1.02, backgroundColor: 'rgba(0, 0, 0, 0.01)' }}
@@ -25,7 +27,7 @@ const LoopzItem: React.FC<LoopzItemProps> = ({ loopz, onSelect }) => {
 
       <div className="flex items-center">
         <div className="flex-1 bg-gray-200 rounded-full h-2 mr-2">
-          <motion.div
+          <MotionDiv
             className="bg-black rounded-full h-2"
             initial={{ width: 0 }}
             animate={{ width: `${progressPercentage}%` }}
@@ -33,10 +35,10 @@ const LoopzItem: React.FC<LoopzItemProps> = ({ loopz, onSelect }) => {
           />
         </div>
         <span className="text-sm text-gray-500 w-16 text-right">
-          {loopz.completedSteps} / {loopz.totalSteps}
+          {loopz.completedSteps ?? 0} / {loopz.totalSteps ?? 0}
         </span>
       </div>
-    </motion.div>
+    </MotionDiv>
   );
 };
 
